@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Detail — AI Interview Simulation</title>
+  <meta name="description" content="Detailed interview results with per-question feedback and skill analysis.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .detail-header {
+      background: linear-gradient(135deg, #0a192f 0%, #1e3a8a 60%, #1d4ed8 100%);
+      border-radius: 16px;
+      padding: 32px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .detail-header::before {
+      content: '';
+      position: absolute;
+      width: 250px; height: 250px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+      right: -40px; top: -60px;
+    }
+
+    .detail-meta h2 {
+      font-size: 22px; font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .detail-tags {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+
+    .detail-tag {
+      background: rgba(255,255,255,0.15);
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    .detail-score-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      z-index: 1;
+    }
+
+    .score-ring-big {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      border: 7px solid;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+
+    .score-ring-num {
+      font-size: 28px; font-weight: 900; line-height: 1;
+    }
+
+    .score-ring-grade { font-size: 14px; font-weight: 700; margin-top: 2px; }
+    .score-ring-lbl { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-container { height: 250px; position: relative; }
+
+    .qa-card {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s ease;
+    }
+
+    .qa-card:hover { box-shadow: var(--card-shadow-hover); }
+
+    .qa-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      gap: 16px;
+    }
+
+    .qa-header:hover { background: var(--bg-secondary); }
+
+    .qa-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+
+    .qa-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .qa-question {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .qa-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    .qa-arrow {
+      font-size: 12px; color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .qa-card.open .qa-arrow { transform: rotate(180deg); }
+
+    .qa-body {
+      display: none;
+      padding: 0 20px 20px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .qa-card.open .qa-body { display: block; animation: fadeIn 0.3s ease; }
+
+    .qa-section-title {
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 16px 0 8px;
+    }
+
+    .qa-answer-text {
+      font-size: 14px; color: var(--text-body);
+      background: var(--bg-secondary);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      line-height: 1.7;
+      border-left: 3px solid var(--accent);
+    }
+
+    .qa-suggestion {
+      font-size: 14px; color: var(--text-body);
+      background: #eff6ff;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      line-height: 1.7;
+      border-left: 3px solid #3b82f6;
+    }
+
+    @media (max-width: 900px) {
+      .charts-row { grid-template-columns: 1fr; }
+      .detail-header { flex-direction: column; text-align: center; }
+      .detail-tags { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="logo-icon">🎯</div>
+      <div><span>AI Interview</span><small>Practice Hub</small></div>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <span class="nav-section-label">Activity</span>
+      <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
+      <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sidebar-avatar">HV</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">Harsh Vardhan Singh</div>
+          <div class="user-email" id="sidebar-user-email">harsh@example.com</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><span class="nav-icon">🚪</span> Logout</button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <main class="main-content">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb animate-fade-up">
+      <a href="history.html">📋 History</a>
+      <span>›</span>
+      <span id="bc-title">Interview Detail</span>
+    </div>
+
+    <!-- Header -->
+    <div class="detail-header animate-fade-up" id="detail-header">
+      <div class="detail-meta">
+        <h2 id="detail-role">Loading...</h2>
+        <div class="detail-tags">
+          <span class="detail-tag" id="detail-diff">—</span>
+          <span class="detail-tag" id="detail-date">—</span>
+          <span class="detail-tag" id="detail-qs">—</span>
+          <span class="detail-tag" id="detail-dur">—</span>
+        </div>
+      </div>
+      <div class="detail-score-wrap">
+        <div class="score-ring-big" id="score-ring">
+          <div class="score-ring-num" id="score-num">—</div>
+          <div class="score-ring-grade" id="score-grade">—</div>
+        </div>
+        <div class="score-ring-lbl">Overall Score</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="card animate-fade-up stagger-1">
+        <div class="card-header">
+          <span class="card-title">📊 Score by Question</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+      <div class="card animate-fade-up stagger-2">
+        <div class="card-header">
+          <span class="card-title">🎯 Keyword Coverage</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-question accordion -->
+    <div class="card-header" style="margin-bottom:16px">
+      <span class="card-title">📝 Question-by-Question Review</span>
+    </div>
+    <div id="qa-list">
+      <div class="empty-state" style="padding:30px"><p>Loading...</p></div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="history.html" class="btn btn-ghost">← Back to History</a>
+      <a href="setup.html" class="btn btn-primary">🚀 New Interview</a>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script>
+  requireAuth();
+  populateSidebar('history');
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const interview = getInterviewById(id);
+
+  if (!interview) {
+    document.querySelector('.main-content').innerHTML = `
+      <div class="empty-state" style="padding:60px">
+        <div class="empty-icon">🔍</div>
+        <h3>Interview Not Found</h3>
+        <p>This interview doesn't exist or has been deleted.</p>
+        <a href="history.html" class="btn btn-primary" style="margin-top:16px">← Back to History</a>
+      </div>`;
+  } else {
+    renderDetail(interview);
+  }
+
+  function renderDetail(iv) {
+    const color = getScoreColor(iv.score);
+    const grade = iv.score >= 85 ? 'A' : iv.score >= 70 ? 'B' : iv.score >= 55 ? 'C' : iv.score >= 40 ? 'D' : 'F';
+
+    document.getElementById('bc-title').textContent = iv.role + ' — ' + formatDate(iv.date);
+    document.getElementById('detail-role').textContent = iv.role + ' Interview';
+    document.getElementById('detail-diff').textContent = iv.difficulty;
+    document.getElementById('detail-date').textContent = formatDate(iv.date);
+    document.getElementById('detail-qs').textContent = iv.questions + ' questions';
+    document.getElementById('detail-dur').textContent = iv.duration;
+    document.getElementById('score-num').textContent = iv.score + '%';
+    document.getElementById('score-num').style.color = color;
+    document.getElementById('score-grade').textContent = 'Grade ' + grade;
+    document.getElementById('score-grade').style.color = color;
+    document.getElementById('score-ring').style.borderColor = color;
+
+    const fb = iv.feedback || [];
+
+    // Bar chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: fb.map((_,i) => 'Q' + (i+1)),
+        datasets: [{
+          label: 'Score',
+          data: fb.map(f => f.score),
+          backgroundColor: fb.map(f => getScoreColor(f.score) + '88'),
+          borderColor: fb.map(f => getScoreColor(f.score)),
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 12, weight: 600 } } }
+        }
+      }
+    });
+
+    // Radar chart — keyword coverage per question
+    const radarLabels = fb.map((_,i) => 'Q' + (i+1));
+    const radarData = fb.map(f => {
+      const total = (f.keywords || []).length || 1;
+      const matched = (f.matchedKeywords || []).length;
+      return Math.round((matched / total) * 100);
+    });
+
+    const radarCtx = document.getElementById('radarChart').getContext('2d');
+    new Chart(radarCtx, {
+      type: 'radar',
+      data: {
+        labels: radarLabels,
+        datasets: [{
+          label: 'Coverage %',
+          data: radarData,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.12)',
+          borderWidth: 2,
+          pointBackgroundColor: '#3b82f6',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            beginAtZero: true, max: 100,
+            grid: { color: '#e2e8f0' },
+            pointLabels: { font: { size: 12, weight: 600 } },
+            ticks: { display: false }
+          }
+        }
+      }
+    });
+
+    // Q&A cards
+    const qaList = document.getElementById('qa-list');
+    qaList.innerHTML = fb.map((f, i) => {
+      const sc = f.score;
+      const scColor = getScoreColor(sc);
+      const badgeCls = sc >= 70 ? 'badge-green' : sc >= 50 ? 'badge-blue' : 'badge-red';
+      const matched = new Set((f.matchedKeywords || []).map(k=>k.toLowerCase()));
+      const kwHtml = (f.keywords || []).map(kw =>
+        matched.has(kw.toLowerCase())
+          ? `<span class="keyword-tag matched">✓ ${kw}</span>`
+          : `<span class="keyword-tag missed">✗ ${kw}</span>`
+      ).join('');
+
+      return `
+        <div class="qa-card" id="qa-${i}">
+          <div class="qa-header" onclick="toggleQA(${i})">
+            <div class="qa-left">
+              <div class="qa-num">${i+1}</div>
+              <div class="qa-question">${f.question}</div>
+            </div>
+            <div class="qa-right">
+              <span class="badge ${badgeCls}">${sc}%</span>
+              <span class="qa-arrow">▼</span>
+            </div>
+          </div>
+          <div class="qa-body">
+            <div class="qa-section-title">Your Answer</div>
+            <div class="qa-answer-text">${f.answer || '<em style="color:var(--text-muted)">No answer provided</em>'}</div>
+
+            <div class="qa-section-title">AI Suggestion</div>
+            <div class="qa-suggestion">💡 ${f.suggestion || 'No suggestion available.'}</div>
+
+            <div class="qa-section-title">Keywords</div>
+            <div>${kwHtml || '<span style="color:var(--text-muted);font-size:13px">No keywords</span>'}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Auto-expand first
+    if (fb.length > 0) toggleQA(0);
+  }
+
+  function toggleQA(idx) {
+    const card = document.getElementById('qa-' + idx);
+    if (card) card.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

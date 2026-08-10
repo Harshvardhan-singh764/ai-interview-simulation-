@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — AI Interview Simulation</title>
+  <meta name="description" content="Manage your profile, change password, and account settings.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .profile-sidebar-card {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+    }
+
+    .profile-avatar-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 800; color: white;
+      box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+    }
+
+    .avatar-edit-btn {
+      position: absolute;
+      bottom: 2px; right: 2px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary); color: white;
+      border: 3px solid var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: pointer;
+    }
+
+    .profile-name {
+      font-size: 20px; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 4px;
+    }
+
+    .profile-email {
+      font-size: 14px; color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .profile-info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+    }
+
+    .profile-info-label { color: var(--text-muted); }
+    .profile-info-value { color: var(--text-dark); font-weight: 600; }
+
+    .profile-stats-row {
+      display: flex; gap: 16px;
+      margin-top: 20px;
+    }
+
+    .profile-stat {
+      flex: 1;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .profile-stat-val { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+    .profile-stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-section-title {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .danger-zone {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .danger-zone h4 {
+      font-size: 15px; font-weight: 700;
+      color: #dc2626; margin-bottom: 8px;
+    }
+
+    .danger-zone p {
+      font-size: 13px; color: #991b1b;
+      margin-bottom: 16px;
+    }
+
+    .success-toast {
+      position: fixed;
+      top: 24px; right: 24px;
+      background: #16a34a; color: white;
+      padding: 12px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(22,163,74,0.3);
+      animation: fadeInUp 0.3s ease;
+      display: none; z-index: 300;
+    }
+
+    @media (max-width: 900px) {
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="logo-icon">🎯</div>
+      <div><span>AI Interview</span><small>Practice Hub</small></div>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <span class="nav-section-label">Activity</span>
+      <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
+      <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sidebar-avatar">HV</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">Harsh Vardhan Singh</div>
+          <div class="user-email" id="sidebar-user-email">harsh@example.com</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><span class="nav-icon">🚪</span> Logout</button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <main class="main-content">
+
+    <div class="page-header animate-fade-up">
+      <div class="page-title">👤 Profile & Settings</div>
+      <div class="page-subtitle">Manage your account and preferences</div>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Left: Profile Card -->
+      <div>
+        <div class="profile-sidebar-card animate-fade-up stagger-1">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profile-avatar">HV</div>
+            <div class="avatar-edit-btn" title="Change avatar">📷</div>
+          </div>
+          <div class="profile-name" id="profile-name">Harsh Vardhan Singh</div>
+          <div class="profile-email" id="profile-email">harsh@example.com</div>
+          <span class="badge badge-blue">Active Member</span>
+
+          <div style="margin-top:20px">
+            <div class="profile-info-row">
+              <span class="profile-info-label">Member Since</span>
+              <span class="profile-info-value" id="profile-joined">Jan 2025</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Role</span>
+              <span class="profile-info-value" id="profile-title">Software Engineer</span>
+            </div>
+          </div>
+
+          <div class="profile-stats-row">
+            <div class="profile-stat">
+              <div class="profile-stat-val" id="pf-total">—</div>
+              <div class="profile-stat-lbl">Interviews</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val" id="pf-avg">—</div>
+              <div class="profile-stat-lbl">Avg Score</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val" id="pf-best">—</div>
+              <div class="profile-stat-lbl">Best</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Settings -->
+      <div>
+
+        <!-- Edit Profile -->
+        <div class="card animate-fade-up stagger-2" style="margin-bottom:20px">
+          <div class="settings-section">
+            <div class="settings-section-title">✏️ Edit Profile</div>
+            <div class="form-group">
+              <label class="form-label" for="edit-name">Full Name</label>
+              <input type="text" class="form-control" id="edit-name" value="Harsh Vardhan Singh">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-email">Email Address</label>
+              <input type="email" class="form-control" id="edit-email" value="harsh@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-title">Job Title</label>
+              <input type="text" class="form-control" id="edit-title" value="Software Engineer">
+            </div>
+            <button class="btn btn-primary" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card animate-fade-up stagger-3" style="margin-bottom:20px">
+          <div class="settings-section">
+            <div class="settings-section-title">🔒 Change Password</div>
+            <div class="form-group">
+              <label class="form-label" for="curr-pass">Current Password</label>
+              <input type="password" class="form-control" id="curr-pass" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-pass">New Password</label>
+              <input type="password" class="form-control" id="new-pass" placeholder="Enter new password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirm-pass">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirm-pass" placeholder="Confirm new password">
+            </div>
+            <div id="pass-error" style="display:none"></div>
+            <button class="btn btn-primary" onclick="changePassword()">🔑 Update Password</button>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="card animate-fade-up stagger-4" style="margin-bottom:20px">
+          <div class="settings-section">
+            <div class="settings-section-title">⚙️ Preferences</div>
+            <div class="form-group">
+              <label class="form-label">Default Interview Role</label>
+              <select class="form-select" id="pref-role">
+                <option value="">No preference</option>
+                <option>Software Engineer</option>
+                <option>Data Scientist</option>
+                <option>Product Manager</option>
+                <option>UX Designer</option>
+                <option>DevOps Engineer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default Difficulty</label>
+              <select class="form-select" id="pref-diff">
+                <option value="">No preference</option>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" onclick="showToast('Preferences saved!')">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="card animate-fade-up stagger-4" style="margin-bottom:20px">
+          <div class="settings-section">
+            <div class="settings-section-title">📦 Data Management</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-ghost" onclick="exportData()">📥 Export History (JSON)</button>
+              <button class="btn btn-ghost" onclick="clearData()">🗑️ Clear All History</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="danger-zone animate-fade-up stagger-4">
+          <h4>⚠️ Danger Zone</h4>
+          <p>Logging out will clear your session. Your interview history is saved locally and will persist.</p>
+          <button class="btn btn-danger" onclick="doLogout()">🚪 Logout</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="success-toast" id="toast">✓ Saved successfully!</div>
+
+<script src="js/utils.js"></script>
+<script>
+  const user = requireAuth();
+  populateSidebar('profile');
+
+  // Fill profile
+  document.getElementById('profile-name').textContent = user.name;
+  document.getElementById('profile-email').textContent = user.email;
+  document.getElementById('profile-avatar').textContent = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('edit-name').value = user.name;
+  document.getElementById('edit-email').value = user.email;
+  document.getElementById('edit-title').value = user.title || 'Software Engineer';
+
+  const joinDate = new Date(user.joinDate);
+  document.getElementById('profile-joined').textContent = joinDate.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+  document.getElementById('profile-title').textContent = user.title || 'Software Engineer';
+
+  // Stats
+  const history = getHistory();
+  const scores = history.map(h => h.score);
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const best = scores.length ? Math.max(...scores) : 0;
+  document.getElementById('pf-total').textContent = history.length;
+  document.getElementById('pf-avg').textContent = avg + '%';
+  document.getElementById('pf-best').textContent = best + '%';
+
+  function saveProfile() {
+    const name = document.getElementById('edit-name').value.trim();
+    const email = document.getElementById('edit-email').value.trim();
+    const title = document.getElementById('edit-title').value.trim();
+    if (!name || !email) { showToast('Please fill in all fields'); return; }
+    user.name = name;
+    user.email = email;
+    user.title = title;
+    sessionStorage.setItem('ai_user', JSON.stringify(user));
+    document.getElementById('profile-name').textContent = name;
+    document.getElementById('profile-email').textContent = email;
+    document.getElementById('profile-avatar').textContent = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebar-user-name').textContent = name;
+    document.getElementById('sidebar-user-email').textContent = email;
+    document.getElementById('sidebar-avatar').textContent = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    showToast('Profile updated successfully!');
+  }
+
+  function changePassword() {
+    const curr = document.getElementById('curr-pass').value;
+    const newP = document.getElementById('new-pass').value;
+    const conf = document.getElementById('confirm-pass').value;
+    const errEl = document.getElementById('pass-error');
+    if (!curr || !newP || !conf) {
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Please fill all fields.'; errEl.style.display = 'flex'; return;
+    }
+    if (newP.length < 6) {
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Password must be at least 6 characters.'; errEl.style.display = 'flex'; return;
+    }
+    if (newP !== conf) {
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Passwords do not match.'; errEl.style.display = 'flex'; return;
+    }
+    errEl.style.display = 'none';
+    document.getElementById('curr-pass').value = '';
+    document.getElementById('new-pass').value = '';
+    document.getElementById('confirm-pass').value = '';
+    showToast('Password changed successfully!');
+  }
+
+  function exportData() {
+    const data = JSON.stringify(getHistory(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'interview_history.json';
+    a.click(); URL.revokeObjectURL(url);
+    showToast('History exported!');
+  }
+
+  function clearData() {
+    if (confirm('Are you sure you want to clear all interview history? This cannot be undone.')) {
+      localStorage.removeItem('ai_interview_history');
+      document.getElementById('pf-total').textContent = '0';
+      document.getElementById('pf-avg').textContent = '0%';
+      document.getElementById('pf-best').textContent = '0%';
+      showToast('History cleared!');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = '✓ ' + msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+</script>
+</body>
+</html>

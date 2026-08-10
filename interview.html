@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Session — AI Interview Simulation</title>
+  <meta name="description" content="Live AI interview session with timer, voice input, and real-time feedback.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #f0f4ff; }
+
+    .interview-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP BAR */
+    .interview-topbar {
+      background: var(--sidebar-bg);
+      padding: 0 28px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0; z-index: 50;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+
+    .topbar-left {
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .topbar-logo {
+      display: flex; align-items: center; gap: 10px;
+      color: white; font-weight: 700; font-size: 15px;
+    }
+
+    .topbar-session-info {
+      font-size: 12px; color: rgba(204,214,246,0.7);
+      background: rgba(255,255,255,0.07);
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    .topbar-center {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px;
+    }
+
+    .progress-wrap {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; max-width: 360px;
+    }
+
+    .progress-label {
+      font-size: 12px; color: rgba(204,214,246,0.8);
+      white-space: nowrap;
+    }
+
+    .progress-bar-white {
+      flex: 1; height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px; overflow: hidden;
+    }
+
+    .progress-fill-white {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #93c5fd);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .timer-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.1);
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 18px; font-weight: 800;
+      color: #4ade80;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+      min-width: 80px; justify-content: center;
+    }
+
+    .timer-badge.warning { color: #fbbf24; background: rgba(251,191,36,0.15); }
+    .timer-badge.danger { color: #f87171; background: rgba(248,113,113,0.15); animation: timerPulse 0.5s ease infinite alternate; }
+
+    .btn-end {
+      background: rgba(239,68,68,0.15);
+      color: #f87171; border: 1px solid rgba(239,68,68,0.3);
+      padding: 7px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-end:hover { background: #dc2626; color: white; }
+
+    /* MAIN INTERVIEW AREA */
+    .interview-body {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 24px;
+      gap: 24px;
+    }
+
+    .interview-card-wrap {
+      width: 100%; max-width: 740px;
+    }
+
+    /* QUESTION CARD */
+    .question-card {
+      background: white;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 8px 40px rgba(10,25,47,0.12);
+      margin-bottom: 20px;
+      animation: fadeInUp 0.4s ease;
+      border-top: 4px solid var(--accent);
+    }
+
+    .question-meta {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .q-number-badge {
+      background: var(--primary);
+      color: white; font-size: 12px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    .q-role-badge {
+      background: var(--accent-subtle);
+      color: var(--accent); font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px;
+    }
+
+    .question-text {
+      font-size: 20px; font-weight: 700;
+      color: var(--text-dark); line-height: 1.5;
+    }
+
+    /* ANSWER AREA */
+    .answer-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 4px 20px rgba(10,25,47,0.08);
+      margin-bottom: 20px;
+    }
+
+    .answer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .answer-label {
+      font-size: 14px; font-weight: 700; color: var(--text-dark);
+    }
+
+    .voice-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .voice-status {
+      font-size: 12px; color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .voice-status.listening { color: #ef4444; font-weight: 600; }
+
+    .answer-textarea {
+      width: 100%; min-height: 160px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-family: inherit;
+      color: var(--text-dark);
+      resize: vertical; outline: none;
+      transition: all 0.2s ease;
+      line-height: 1.7;
+    }
+
+    .answer-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+
+    .answer-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .char-count { font-size: 12px; color: var(--text-muted); }
+    .char-count.good { color: #16a34a; }
+
+    .submit-btn {
+      background: var(--primary); color: white;
+      padding: 12px 32px; border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s ease; font-family: inherit;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(30,58,138,0.3);
+    }
+
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* FEEDBACK CARD */
+    .feedback-card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 8px 40px rgba(10,25,47,0.12);
+      margin-bottom: 20px;
+      animation: fadeInUp 0.5s ease;
+      display: none;
+    }
+
+    .feedback-card.show { display: block; }
+
+    .feedback-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap; gap: 16px;
+    }
+
+    .feedback-title { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+
+    .score-big-wrap {
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .score-circle {
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border: 6px solid;
+      flex-shrink: 0;
+    }
+
+    .score-circle-num {
+      font-size: 24px; font-weight: 800;
+      color: var(--text-dark); line-height: 1;
+    }
+
+    .score-circle-grade {
+      font-size: 13px; font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .feedback-suggestion {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.7;
+      margin-bottom: 16px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .keywords-section { margin-bottom: 16px; }
+    .keywords-label { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+
+    .keyword-tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      margin: 3px; gap: 4px;
+    }
+
+    .keyword-tag.matched { background: #dcfce7; color: #15803d; }
+    .keyword-tag.missed { background: #fee2e2; color: #dc2626; }
+
+    .next-btn {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white; padding: 13px 32px;
+      border-radius: 10px; font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer; width: 100%;
+      transition: all 0.2s ease; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+
+    .next-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(30,58,138,0.3); }
+
+    /* SIDEBAR HINTS */
+    .interview-sidebar {
+      width: 280px; flex-shrink: 0;
+    }
+
+    .hint-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(10,25,47,0.08);
+      margin-bottom: 16px;
+    }
+
+    .hint-title { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; }
+
+    .q-dot-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .q-dot {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      border: 2px solid var(--card-border);
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .q-dot.current { background: var(--primary); color: white; border-color: var(--primary); }
+    .q-dot.done-good { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .q-dot.done-ok { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+    .q-dot.done-bad { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+
+    /* END SUMMARY */
+    .summary-card {
+      background: white; border-radius: 20px;
+      padding: 36px; text-align: center;
+      box-shadow: 0 8px 40px rgba(10,25,47,0.12);
+      animation: scaleIn 0.5s ease;
+      display: none;
+    }
+
+    .summary-card.show { display: block; }
+    .summary-emoji { font-size: 64px; margin-bottom: 16px; }
+    .summary-title { font-size: 28px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+    .summary-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+    .summary-score-big { font-size: 72px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
+    .summary-label { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+
+    .summary-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 28px;
+    }
+
+    .summary-stat {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .summary-stat-val { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+    .summary-stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .summary-actions { display: flex; gap: 12px; justify-content: center; }
+
+    /* MODAL */
+    .end-modal { display: none; }
+    .end-modal.show { display: flex; }
+
+    @media (max-width: 900px) {
+      .interview-sidebar { display: none; }
+      .interview-body { padding: 20px 16px; }
+    }
+
+    @media (max-width: 600px) {
+      .topbar-center { display: none; }
+      .question-card { padding: 24px; }
+      .question-text { font-size: 17px; }
+      .answer-card { padding: 20px; }
+      .feedback-card { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="interview-page">
+
+  <!-- TOP BAR -->
+  <div class="interview-topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">
+        <span style="font-size:20px">🎯</span> AI Interview
+      </div>
+      <div class="topbar-session-info" id="session-info">Loading...</div>
+    </div>
+    <div class="topbar-center">
+      <div class="progress-wrap">
+        <span class="progress-label" id="progress-label">Q 1 of 5</span>
+        <div class="progress-bar-white">
+          <div class="progress-fill-white" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="timer-badge" id="timer-badge">⏱ 01:30</div>
+      <button class="btn-end" onclick="showEndModal()">⏹ End</button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="interview-body">
+
+    <!-- MAIN AREA -->
+    <div class="interview-card-wrap">
+
+      <!-- Question Card -->
+      <div class="question-card" id="question-card">
+        <div class="question-meta">
+          <span class="q-number-badge" id="q-number">Q 1</span>
+          <span class="q-role-badge" id="q-role">Software Engineer</span>
+        </div>
+        <div class="question-text" id="question-text">Loading question...</div>
+      </div>
+
+      <!-- Answer Card -->
+      <div class="answer-card" id="answer-card">
+        <div class="answer-header">
+          <span class="answer-label">✍️ Your Answer</span>
+          <div class="voice-row">
+            <span class="voice-status" id="voice-status">🎙️ Click mic to use voice</span>
+            <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice to text">🎙️</button>
+          </div>
+        </div>
+        <textarea class="answer-textarea" id="answer-input" placeholder="Type your answer here, or click the mic button to speak..."></textarea>
+        <div class="answer-footer">
+          <span class="char-count" id="char-count">0 characters</span>
+          <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">
+            Submit Answer ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- Feedback Card -->
+      <div class="feedback-card" id="feedback-card">
+        <div class="feedback-header">
+          <div class="feedback-title">🤖 AI Feedback</div>
+          <div class="score-big-wrap">
+            <div class="score-circle" id="score-circle">
+              <div class="score-circle-num" id="score-num">—</div>
+              <div class="score-circle-grade" id="score-grade">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback-suggestion" id="feedback-suggestion"></div>
+
+        <div class="keywords-section">
+          <div class="keywords-label">Keyword Coverage:</div>
+          <div id="keywords-wrap"></div>
+        </div>
+
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+          Next Question →
+        </button>
+      </div>
+
+      <!-- Summary Card (shown at end) -->
+      <div class="summary-card" id="summary-card">
+        <div class="summary-emoji" id="sum-emoji">🎉</div>
+        <div class="summary-title">Interview Complete!</div>
+        <div class="summary-subtitle" id="sum-sub">Great job completing your session</div>
+        <div class="summary-score-big" id="sum-score">—</div>
+        <div class="summary-label">Overall Score</div>
+        <div class="summary-stats">
+          <div class="summary-stat">
+            <div class="summary-stat-val" id="sum-qs">—</div>
+            <div class="summary-stat-lbl">Questions</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-stat-val" id="sum-best">—</div>
+            <div class="summary-stat-lbl">Best Score</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-stat-val" id="sum-time">—</div>
+            <div class="summary-stat-lbl">Duration</div>
+          </div>
+        </div>
+        <div class="summary-actions">
+          <a href="history.html" class="btn btn-primary btn-lg">📋 View Results</a>
+          <a href="setup.html" class="btn btn-outline btn-lg">🔄 Try Again</a>
+          <a href="dashboard.html" class="btn btn-ghost btn-lg">🏠 Dashboard</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR HINTS -->
+    <div class="interview-sidebar">
+      <div class="hint-card">
+        <div class="hint-title">📍 Progress</div>
+        <div class="q-dot-row" id="q-dot-row"></div>
+      </div>
+
+      <div class="hint-card">
+        <div class="hint-title">💡 Answer Tips</div>
+        <ul style="font-size:12px;color:var(--text-muted);line-height:1.9;padding-left:16px">
+          <li>Define key terms</li>
+          <li>Give a concrete example</li>
+          <li>Use the STAR method</li>
+          <li>Keep it focused &amp; clear</li>
+          <li>Aim for 3–5 sentences</li>
+        </ul>
+      </div>
+
+      <div class="hint-card" style="background:linear-gradient(135deg,#0a192f,#1e3a8a);color:white">
+        <div class="hint-title" style="color:#93c5fd">📊 Session</div>
+        <div style="font-size:13px;color:rgba(204,214,246,0.8)" id="sidebar-session-info">—</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- END MODAL -->
+<div class="modal-overlay end-modal" id="end-modal">
+  <div class="modal">
+    <div class="modal-title">⏹ End Interview?</div>
+    <div class="modal-body">
+      Are you sure you want to end the interview early? Your progress so far will be saved to your history.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="hideEndModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="endInterview(true)">End Interview</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/utils.js"></script>
+<script>
+  requireAuth();
+
+  const config = getInterviewConfig();
+  const session = getInterviewSession();
+
+  if (!config || !session || !session.questions || session.questions.length === 0) {
+    window.location.href = 'setup.html';
+  }
+
+  let currentIndex = session.currentIndex || 0;
+  let questions = session.questions;
+  let answers = session.answers || [];
+  let feedbacks = session.scores || [];
+  let timerInterval = null;
+  let secondsLeft = config.timerSec;
+  let isSubmitted = false;
+  let isListening = false;
+  let recognition = null;
+  const startTime = new Date();
+
+  // Set up speech recognition
+  const SpeechRecog = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecog) {
+    recognition = new SpeechRecog();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      const ta = document.getElementById('answer-input');
+      const base = ta.dataset.base || '';
+      ta.value = base + transcript;
+      updateCharCount();
+    };
+    recognition.onend = () => {
+      if (isListening) recognition.start();
+    };
+  }
+
+  function toggleVoice() {
+    const btn = document.getElementById('mic-btn');
+    const status = document.getElementById('voice-status');
+    if (!recognition) {
+      status.textContent = '❌ Not supported in this browser';
+      return;
+    }
+    if (isListening) {
+      recognition.stop();
+      isListening = false;
+      btn.classList.remove('listening');
+      btn.textContent = '🎙️';
+      status.textContent = '🎙️ Click mic to use voice';
+      status.classList.remove('listening');
+      const ta = document.getElementById('answer-input');
+      ta.dataset.base = ta.value;
+    } else {
+      recognition.start();
+      isListening = true;
+      btn.classList.add('listening');
+      btn.textContent = '⏹';
+      status.textContent = '🔴 Listening... click to stop';
+      status.classList.add('listening');
+    }
+  }
+
+  function stopVoice() {
+    if (isListening && recognition) {
+      recognition.stop();
+      isListening = false;
+      document.getElementById('mic-btn').classList.remove('listening');
+      document.getElementById('mic-btn').textContent = '🎙️';
+      document.getElementById('voice-status').textContent = '🎙️ Click mic to use voice';
+      document.getElementById('voice-status').classList.remove('listening');
+    }
+  }
+
+  function initQuestion() {
+    isSubmitted = false;
+    secondsLeft = config.timerSec;
+
+    const q = questions[currentIndex];
+    const totalQ = questions.length;
+
+    // Update UI
+    document.getElementById('q-number').textContent = `Q ${currentIndex+1}`;
+    document.getElementById('q-role').textContent = config.role;
+    document.getElementById('question-text').textContent = q.q;
+    document.getElementById('progress-label').textContent = `Q ${currentIndex+1} of ${totalQ}`;
+    document.getElementById('progress-fill').style.width = ((currentIndex / totalQ) * 100) + '%';
+    document.getElementById('session-info').textContent = `${config.role} · ${config.difficulty}`;
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-input').dataset.base = '';
+    document.getElementById('char-count').textContent = '0 characters';
+    document.getElementById('char-count').className = 'char-count';
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').innerHTML = 'Submit Answer ✓';
+
+    // Sidebar session info
+    document.getElementById('sidebar-session-info').innerHTML =
+      `Role: <strong style="color:white">${config.role}</strong><br>` +
+      `Difficulty: <strong style="color:white">${config.difficulty}</strong><br>` +
+      `Q ${currentIndex+1} of ${totalQ}`;
+
+    // Reset cards
+    document.getElementById('question-card').style.display = 'block';
+    document.getElementById('answer-card').style.display = 'block';
+    document.getElementById('feedback-card').classList.remove('show');
+    document.getElementById('summary-card').classList.remove('show');
+
+    // Dots
+    renderDots();
+
+    // Start timer
+    clearInterval(timerInterval);
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      secondsLeft--;
+      updateTimerDisplay();
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!isSubmitted) submitAnswer(true);
+      }
+    }, 1000);
+
+    // Animate question
+    const qCard = document.getElementById('question-card');
+    qCard.style.animation = 'none';
+    qCard.offsetHeight;
+    qCard.style.animation = 'fadeInUp 0.4s ease';
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+    const secs = (secondsLeft % 60).toString().padStart(2,'0');
+    const badge = document.getElementById('timer-badge');
+    badge.textContent = `⏱ ${mins}:${secs}`;
+    const pct = secondsLeft / config.timerSec;
+    badge.className = 'timer-badge';
+    if (pct <= 0.15) badge.classList.add('danger');
+    else if (pct <= 0.35) badge.classList.add('warning');
+  }
+
+  function updateCharCount() {
+    const len = document.getElementById('answer-input').value.trim().length;
+    const el = document.getElementById('char-count');
+    el.textContent = len + ' characters';
+    el.className = 'char-count' + (len >= 80 ? ' good' : '');
+  }
+
+  document.getElementById('answer-input').addEventListener('input', updateCharCount);
+
+  function submitAnswer(timeUp = false) {
+    if (isSubmitted) return;
+    isSubmitted = true;
+    stopVoice();
+    clearInterval(timerInterval);
+
+    const answer = document.getElementById('answer-input').value;
+    const q = questions[currentIndex];
+    const result = evaluateAnswer(q, timeUp && !answer ? '' : answer);
+
+    answers.push({ question: q.q, answer, timeUp });
+    feedbacks.push(result);
+
+    // Save session
+    session.answers = answers;
+    session.scores = feedbacks;
+    session.currentIndex = currentIndex;
+    setInterviewSession(session);
+
+    // Disable submit
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '✓ Submitted';
+
+    // Show feedback
+    showFeedback(result, q);
+  }
+
+  function showFeedback(result, q) {
+    const card = document.getElementById('feedback-card');
+
+    // Score circle
+    const color = getScoreColor(result.score);
+    const circle = document.getElementById('score-circle');
+    circle.style.borderColor = color;
+    document.getElementById('score-num').textContent = result.score + '%';
+    document.getElementById('score-num').style.color = color;
+    document.getElementById('score-grade').textContent = 'Grade: ' + result.grade;
+    document.getElementById('score-grade').style.color = color;
+
+    // Suggestion
+    document.getElementById('feedback-suggestion').textContent = result.suggestion;
+
+    // Keywords
+    const kwWrap = document.getElementById('keywords-wrap');
+    const matched = new Set(result.matchedKeywords.map(k=>k.toLowerCase()));
+    kwWrap.innerHTML = result.allKeywords.map(kw =>
+      matched.has(kw.toLowerCase())
+        ? `<span class="keyword-tag matched">✓ ${kw}</span>`
+        : `<span class="keyword-tag missed">✗ ${kw}</span>`
+    ).join('');
+
+    // Next button label
+    const isLast = currentIndex >= questions.length - 1;
+    document.getElementById('next-btn').textContent = isLast ? '🎉 See Results' : 'Next Question →';
+
+    card.classList.add('show');
+
+    // Update dot
+    renderDots();
+
+    // Scroll to feedback
+    setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  }
+
+  function renderDots() {
+    const row = document.getElementById('q-dot-row');
+    row.innerHTML = questions.map((_, i) => {
+      let cls = 'q-dot';
+      if (i === currentIndex && !isSubmitted) cls += ' current';
+      else if (feedbacks[i]) {
+        const s = feedbacks[i].score;
+        cls += s >= 70 ? ' done-good' : s >= 50 ? ' done-ok' : ' done-bad';
+      }
+      return `<div class="${cls}">${i+1}</div>`;
+    }).join('');
+  }
+
+  function nextQuestion() {
+    currentIndex++;
+    if (currentIndex >= questions.length) {
+      endInterview(false);
+    } else {
+      initQuestion();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function endInterview(early = false) {
+    hideEndModal();
+    clearInterval(timerInterval);
+    stopVoice();
+
+    const avgScore = feedbacks.length
+      ? Math.round(feedbacks.reduce((a,b) => a + b.score, 0) / feedbacks.length)
+      : 0;
+    const bestScore = feedbacks.length ? Math.max(...feedbacks.map(f=>f.score)) : 0;
+    const duration = Math.round((new Date() - startTime) / 60000);
+
+    // Save to history
+    const historyEntry = {
+      id: session.id || genId(),
+      role: config.role,
+      difficulty: config.difficulty,
+      score: avgScore,
+      questions: feedbacks.length,
+      duration: duration + 'm',
+      date: new Date().toISOString(),
+      feedback: questions.slice(0, feedbacks.length).map((q, i) => ({
+        question: q.q,
+        answer: (answers[i] && answers[i].answer) || '',
+        score: feedbacks[i] ? feedbacks[i].score : 0,
+        keywords: q.keywords,
+        matchedKeywords: feedbacks[i] ? feedbacks[i].matchedKeywords : [],
+        grade: feedbacks[i] ? feedbacks[i].grade : 'F',
+        suggestion: feedbacks[i] ? feedbacks[i].suggestion : ''
+      }))
+    };
+    addInterviewToHistory(historyEntry);
+    clearInterviewSession();
+
+    // Show summary
+    document.getElementById('question-card').style.display = 'none';
+    document.getElementById('answer-card').style.display = 'none';
+    document.getElementById('feedback-card').classList.remove('show');
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('timer-badge').textContent = '✓ Done';
+
+    const sumCard = document.getElementById('summary-card');
+    sumCard.classList.add('show');
+
+    const emoji = avgScore >= 80 ? '🏆' : avgScore >= 65 ? '🎉' : avgScore >= 50 ? '👍' : '💪';
+    const msg = avgScore >= 80 ? 'Outstanding performance!' : avgScore >= 65 ? 'Great job!' : avgScore >= 50 ? 'Good effort!' : 'Keep practicing!';
+
+    document.getElementById('sum-emoji').textContent = emoji;
+    document.getElementById('sum-sub').textContent = msg;
+    document.getElementById('sum-score').textContent = avgScore + '%';
+    document.getElementById('sum-score').style.color = getScoreColor(avgScore);
+    document.getElementById('sum-qs').textContent = feedbacks.length;
+    document.getElementById('sum-best').textContent = bestScore + '%';
+    document.getElementById('sum-time').textContent = duration + 'm';
+
+    sumCard.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function showEndModal() {
+    document.getElementById('end-modal').classList.add('show');
+  }
+
+  function hideEndModal() {
+    document.getElementById('end-modal').classList.remove('show');
+  }
+
+  // Init first question
+  initQuestion();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ai-interview-simulation",
+  "version": "1.0.0",
+  "description": "AI Interview Simulation Web App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "Harsh Vardhan Singh",
+  "license": "MIT"
+}

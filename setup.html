@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Interview — AI Interview Simulation</title>
+  <meta name="description" content="Configure your AI interview session — choose role, difficulty, and number of questions.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .setup-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .step-number {
+      width: 32px; height: 32px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: white;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    .step-content { flex: 1; }
+
+    .step-title {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 14px;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .role-card {
+      padding: 14px 10px;
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      background: var(--bg);
+      user-select: none;
+    }
+
+    .role-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .role-card.selected {
+      border-color: var(--primary);
+      background: var(--accent-subtle);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    .role-card .role-emoji { font-size: 28px; margin-bottom: 8px; }
+    .role-card .role-name { font-size: 12px; font-weight: 600; color: var(--text-dark); line-height: 1.3; }
+
+    .difficulty-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .diff-card {
+      padding: 18px 14px;
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      background: var(--bg);
+      user-select: none;
+    }
+
+    .diff-card:hover { transform: translateY(-2px); }
+
+    .diff-card.selected-beginner { border-color: #16a34a; background: #f0fdf4; }
+    .diff-card.selected-intermediate { border-color: #f59e0b; background: #fffbeb; }
+    .diff-card.selected-advanced { border-color: #ef4444; background: #fef2f2; }
+
+    .diff-card:not([class*="selected"]):hover { border-color: var(--accent); }
+
+    .diff-emoji { font-size: 30px; margin-bottom: 10px; }
+    .diff-name { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+    .diff-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+    .diff-time { font-size: 11px; font-weight: 600; margin-top: 6px; }
+
+    .count-grid {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+
+    .count-btn {
+      width: 64px; height: 64px;
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      font-size: 20px; font-weight: 800;
+      color: var(--text-dark);
+      cursor: pointer; transition: all 0.2s ease;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-family: inherit;
+      user-select: none;
+    }
+
+    .count-btn small { font-size: 10px; font-weight: 500; color: var(--text-muted); }
+    .count-btn:hover { border-color: var(--accent); }
+    .count-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    .count-btn.selected small { color: rgba(255,255,255,0.7); }
+
+    /* Preview card */
+    .preview-card {
+      background: linear-gradient(135deg, #0a192f, #1e3a8a);
+      border-radius: var(--radius);
+      padding: 28px;
+      color: white;
+      position: sticky;
+      top: 24px;
+    }
+
+    .preview-card h3 {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 20px; color: #f0f4ff;
+    }
+
+    .preview-item {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+
+    .preview-item:last-of-type { border-bottom: none; }
+    .preview-label { color: rgba(204,214,246,0.7); }
+    .preview-value { font-weight: 700; color: white; }
+
+    .preview-score {
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      text-align: center;
+    }
+
+    .est-time {
+      font-size: 32px; font-weight: 800; color: #93c5fd;
+      margin-bottom: 4px;
+    }
+
+    .est-label { font-size: 12px; color: rgba(204,214,246,0.6); }
+
+    .start-btn-wrap {
+      margin-top: 20px;
+    }
+
+    .topics-textarea {
+      width: 100%; min-height: 80px;
+      resize: vertical;
+      padding: 11px 16px;
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-family: inherit;
+      color: var(--text-dark); background: var(--bg);
+      transition: all 0.2s ease; outline: none;
+    }
+
+    .topics-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    @media (max-width: 900px) {
+      .setup-grid { grid-template-columns: 1fr; }
+      .preview-card { position: static; }
+      .difficulty-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .role-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="logo-icon">🎯</div>
+      <div><span>AI Interview</span><small>Practice Hub</small></div>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <span class="nav-section-label">Activity</span>
+      <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
+      <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sidebar-avatar">HV</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">Harsh Vardhan Singh</div>
+          <div class="user-email" id="sidebar-user-email">harsh@example.com</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><span class="nav-icon">🚪</span> Logout</button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <main class="main-content">
+    <div class="page-header animate-fade-up">
+      <div class="page-title">🚀 Setup Interview</div>
+      <div class="page-subtitle">Configure your AI-powered practice session</div>
+    </div>
+
+    <div class="setup-grid">
+      <!-- LEFT: Config Form -->
+      <div>
+
+        <!-- Step 1: Role -->
+        <div class="card animate-fade-up stagger-1" style="margin-bottom:20px">
+          <div class="setup-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <div class="step-title">Choose Your Job Role</div>
+              <div class="role-grid" id="role-grid">
+                <!-- JS rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Difficulty -->
+        <div class="card animate-fade-up stagger-2" style="margin-bottom:20px">
+          <div class="setup-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <div class="step-title">Select Difficulty Level</div>
+              <div class="difficulty-grid">
+                <div class="diff-card" id="diff-beginner" onclick="selectDiff('Beginner')">
+                  <div class="diff-emoji">🌱</div>
+                  <div class="diff-name">Beginner</div>
+                  <div class="diff-desc">Foundational concepts & basics</div>
+                  <div class="diff-time" style="color:#16a34a">⏱ 2 min/question</div>
+                </div>
+                <div class="diff-card" id="diff-intermediate" onclick="selectDiff('Intermediate')">
+                  <div class="diff-emoji">⚡</div>
+                  <div class="diff-name">Intermediate</div>
+                  <div class="diff-desc">Applied knowledge & scenarios</div>
+                  <div class="diff-time" style="color:#f59e0b">⏱ 90s/question</div>
+                </div>
+                <div class="diff-card" id="diff-advanced" onclick="selectDiff('Advanced')">
+                  <div class="diff-emoji">🔥</div>
+                  <div class="diff-name">Advanced</div>
+                  <div class="diff-desc">Complex problems & design</div>
+                  <div class="diff-time" style="color:#ef4444">⏱ 60s/question</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Question Count -->
+        <div class="card animate-fade-up stagger-3" style="margin-bottom:20px">
+          <div class="setup-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <div class="step-title">Number of Questions</div>
+              <div class="count-grid">
+                <button class="count-btn" onclick="selectCount(3)" id="cnt-3">3<small>quick</small></button>
+                <button class="count-btn" onclick="selectCount(5)" id="cnt-5">5<small>standard</small></button>
+                <button class="count-btn" onclick="selectCount(7)" id="cnt-7">7<small>thorough</small></button>
+                <button class="count-btn" onclick="selectCount(10)" id="cnt-10">10<small>deep dive</small></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Custom Topics -->
+        <div class="card animate-fade-up stagger-4" style="margin-bottom:20px">
+          <div class="setup-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <div class="step-title">Custom Focus Topics <span style="font-size:12px;color:var(--text-muted);font-weight:400">(optional)</span></div>
+              <textarea class="topics-textarea" id="custom-topics" placeholder="e.g., React hooks, system design, behavioral questions, data structures…"></textarea>
+              <div class="form-hint">Mention specific topics you want to focus on</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="setup-error" style="display:none"></div>
+
+        <button class="btn btn-primary btn-lg btn-full" onclick="startInterview()" id="start-btn">
+          🎯 Start Interview
+        </button>
+
+      </div>
+
+      <!-- RIGHT: Preview -->
+      <div class="animate-fade-up stagger-2">
+        <div class="preview-card">
+          <h3>📋 Session Preview</h3>
+          <div class="preview-item">
+            <span class="preview-label">Role</span>
+            <span class="preview-value" id="prev-role">—</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Difficulty</span>
+            <span class="preview-value" id="prev-diff">—</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Questions</span>
+            <span class="preview-value" id="prev-count">—</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Timer</span>
+            <span class="preview-value" id="prev-timer">—</span>
+          </div>
+          <div class="preview-score">
+            <div class="est-time" id="prev-est">—</div>
+            <div class="est-label">Estimated duration</div>
+          </div>
+          <div class="start-btn-wrap">
+            <button class="btn btn-white" style="background:white;color:#1e3a8a;width:100%;justify-content:center;padding:12px;font-size:15px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-family:inherit;transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''" onclick="startInterview()">
+              🚀 Start Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card" style="margin-top:16px;border-left:4px solid var(--accent)">
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:10px">💡 Pro Tips</div>
+          <ul style="font-size:12px;color:var(--text-muted);line-height:1.8;padding-left:16px">
+            <li>Speak or type your answers clearly</li>
+            <li>Structure answers with STAR method</li>
+            <li>Use technical terms relevant to your role</li>
+            <li>Aim for 3–5 sentences minimum</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script>
+  requireAuth();
+  populateSidebar('setup');
+
+  let selectedRole = null;
+  let selectedDiff = null;
+  let selectedCount = 5;
+
+  // Render roles
+  const roleData = [
+    { name: 'Software Engineer', emoji: '💻' },
+    { name: 'Data Scientist', emoji: '📊' },
+    { name: 'Product Manager', emoji: '🚀' },
+    { name: 'UX Designer', emoji: '🎨' },
+    { name: 'DevOps Engineer', emoji: '⚙️' }
+  ];
+
+  document.getElementById('role-grid').innerHTML = roleData.map(r => `
+    <div class="role-card" id="role-${r.name.replace(/ /g,'_')}" onclick="selectRole('${r.name}')">
+      <div class="role-emoji">${r.emoji}</div>
+      <div class="role-name">${r.name}</div>
+    </div>
+  `).join('');
+
+  // Default selections
+  selectRole('Software Engineer');
+  selectDiff('Intermediate');
+  selectCount(5);
+
+  function selectRole(name) {
+    selectedRole = name;
+    document.querySelectorAll('.role-card').forEach(el => el.classList.remove('selected'));
+    const el = document.getElementById('role-' + name.replace(/ /g,'_'));
+    if (el) el.classList.add('selected');
+    updatePreview();
+  }
+
+  function selectDiff(d) {
+    selectedDiff = d;
+    ['Beginner','Intermediate','Advanced'].forEach(x => {
+      const el = document.getElementById('diff-' + x.toLowerCase());
+      el.className = 'diff-card';
+    });
+    const el = document.getElementById('diff-' + d.toLowerCase());
+    el.classList.add('selected-' + d.toLowerCase());
+    updatePreview();
+  }
+
+  function selectCount(n) {
+    selectedCount = n;
+    [3,5,7,10].forEach(x => {
+      document.getElementById('cnt-' + x).classList.remove('selected');
+    });
+    document.getElementById('cnt-' + n).classList.add('selected');
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const role = selectedRole || '—';
+    const diff = selectedDiff || '—';
+    const count = selectedCount;
+    const timerSec = selectedDiff ? DIFFICULTY_TIMERS[selectedDiff] : 90;
+    const estMin = Math.ceil((count * timerSec) / 60);
+
+    document.getElementById('prev-role').textContent = role;
+    document.getElementById('prev-diff').textContent = diff;
+    document.getElementById('prev-count').textContent = count + ' questions';
+    document.getElementById('prev-timer').textContent = timerSec + 's per question';
+    document.getElementById('prev-est').textContent = '~' + estMin + ' min';
+  }
+
+  function startInterview() {
+    const errEl = document.getElementById('setup-error');
+    if (!selectedRole) {
+      errEl.className = 'alert alert-error';
+      errEl.innerHTML = '⚠️ Please select a job role.';
+      errEl.style.display = 'flex';
+      return;
+    }
+    if (!selectedDiff) {
+      errEl.className = 'alert alert-error';
+      errEl.innerHTML = '⚠️ Please select a difficulty level.';
+      errEl.style.display = 'flex';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const btn = document.getElementById('start-btn');
+    btn.innerHTML = '<div class="spinner"></div> Preparing questions...';
+    btn.disabled = true;
+
+    const questions = generateQuestions(selectedRole, selectedDiff, selectedCount);
+    const config = {
+      role: selectedRole,
+      difficulty: selectedDiff,
+      count: selectedCount,
+      topics: document.getElementById('custom-topics').value,
+      timerSec: DIFFICULTY_TIMERS[selectedDiff]
+    };
+    const session = {
+      id: genId(),
+      questions,
+      currentIndex: 0,
+      answers: [],
+      scores: [],
+      startTime: new Date().toISOString()
+    };
+
+    setInterviewConfig(config);
+    setInterviewSession(session);
+
+    setTimeout(() => { window.location.href = 'interview.html'; }, 600);
+  }
+</script>
+</body>
+</html>
