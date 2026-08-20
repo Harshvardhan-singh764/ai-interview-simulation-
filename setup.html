@@ -360,23 +360,22 @@
   </main>
 </div>
 
+<!-- TOP RIGHT BUTTON -->
+<a href="roadmaps.html" class="top-right-roadmap-btn">🗺️ Roadmaps</a>
+
 <script src="js/utils.js"></script>
 <script>
   requireAuth();
-  populateSidebar('setup');
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAptitude = urlParams.get('role') === 'aptitude';
+  populateSidebar(isAptitude ? 'aptitude' : 'setup');
 
   let selectedRole = null;
   let selectedDiff = null;
   let selectedCount = 5;
 
   // Render roles
-  const roleData = [
-    { name: 'Software Engineer', emoji: '💻' },
-    { name: 'Data Scientist', emoji: '📊' },
-    { name: 'Product Manager', emoji: '🚀' },
-    { name: 'UX Designer', emoji: '🎨' },
-    { name: 'DevOps Engineer', emoji: '⚙️' }
-  ];
+  const roleData = ROLES;
 
   document.getElementById('role-grid').innerHTML = roleData.map(r => `
     <div class="role-card" id="role-${r.name.replace(/ /g,'_')}" onclick="selectRole('${r.name}')">
@@ -386,7 +385,11 @@
   `).join('');
 
   // Default selections
-  selectRole('Software Engineer');
+  if (isAptitude) {
+    selectRole('Aptitude & Reasoning');
+  } else {
+    selectRole('Software Engineer');
+  }
   selectDiff('Intermediate');
   selectCount(5);
 

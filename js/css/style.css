@@ -752,3 +752,37 @@ tbody tr:hover { background: var(--accent-subtle); }
   .stats-grid { grid-template-columns: 1fr; }
   .modal { padding: 24px; }
 }
+
+/* ===================== TOP RIGHT ROADMAP BTN ===================== */
+.top-right-roadmap-btn {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+  transition: all 0.2s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-right-roadmap-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59,130,246,0.4);
+}
+
+@media (max-width: 768px) {
+  .top-right-roadmap-btn {
+    top: 16px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmaps — AI Interview Simulation</title>
+  <meta name="description" content="Career roadmaps and resources for different fields.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .roadmap-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .roadmap-header {
+      margin-bottom: 30px;
+    }
+    .roadmap-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+    .roadmap-header p {
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    .roadmap-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .roadmap-tab {
+      padding: 12px 20px;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .roadmap-tab:hover, .roadmap-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .roadmap-content {
+      display: none;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: var(--card-shadow);
+      animation: fadeIn 0.3s ease;
+    }
+    .roadmap-content.active {
+      display: block;
+    }
+    .roadmap-content h2 {
+      font-size: 24px;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .roadmap-steps {
+      margin-bottom: 30px;
+      padding-left: 20px;
+      color: var(--text-body);
+      line-height: 1.8;
+    }
+    .roadmap-steps li {
+      margin-bottom: 10px;
+    }
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+      max-width: 100%;
+      border-radius: var(--radius-sm);
+      margin-top: 20px;
+      border: 1px solid var(--card-border);
+    }
+    .video-container iframe, .video-container object, .video-container embed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="logo-icon">🎯</div>
+      <div>
+        <span>AI Interview</span>
+        <small>Practice Hub</small>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="dashboard.html" class="nav-link" data-page="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a href="setup.html" class="nav-link" data-page="setup">
+        <span class="nav-icon">🚀</span> New Interview
+      </a>
+      <span class="nav-section-label">Activity</span>
+      <a href="history.html" class="nav-link" data-page="history">
+        <span class="nav-icon">📋</span> History
+      </a>
+      <a href="profile.html" class="nav-link" data-page="profile">
+        <span class="nav-icon">👤</span> Profile
+      </a>
+      <span class="nav-section-label">Resources</span>
+      <a href="roadmaps.html" class="nav-link active" data-page="roadmaps">
+        <span class="nav-icon">🗺️</span> Roadmaps
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sidebar-avatar">HV</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">User Name</div>
+          <div class="user-email" id="sidebar-user-email">user@example.com</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="roadmap-container">
+      <div class="roadmap-header">
+        <h1>Career Roadmaps 🗺️</h1>
+        <p>Explore step-by-step guides and curated video resources to master your desired field.</p>
+      </div>
+
+      <div class="roadmap-tabs">
+        <div class="roadmap-tab active" onclick="showRoadmap('swe')">💻 Software Engineer</div>
+        <div class="roadmap-tab" onclick="showRoadmap('ds')">📊 Data Scientist</div>
+        <div class="roadmap-tab" onclick="showRoadmap('pm')">🚀 Product Manager</div>
+        <div class="roadmap-tab" onclick="showRoadmap('ux')">🎨 UX Designer</div>
+        <div class="roadmap-tab" onclick="showRoadmap('devops')">⚙️ DevOps Engineer</div>
+      </div>
+
+      <!-- SWE -->
+      <div class="roadmap-content active" id="roadmap-swe">
+        <h2>💻 Software Engineer Roadmap</h2>
+        <ul class="roadmap-steps">
+          <li><strong>Foundations:</strong> Learn a programming language (Python, JavaScript, Java, C++).</li>
+          <li><strong>Data Structures & Algorithms:</strong> Arrays, Linked Lists, Trees, Graphs, Sorting, Searching.</li>
+          <li><strong>Version Control:</strong> Git and GitHub basics.</li>
+          <li><strong>Web Fundamentals:</strong> HTTP, APIs, REST, JSON.</li>
+          <li><strong>Backend/Frontend:</strong> Pick a framework (React, Node.js, Spring, Django) and build projects.</li>
+          <li><strong>Databases:</strong> SQL (PostgreSQL, MySQL) and NoSQL (MongoDB).</li>
+          <li><strong>System Design:</strong> Scalability, microservices, load balancing, caching.</li>
+        </ul>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/Ncfa_wbi_fw" title="Software Engineer Roadmap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <!-- DS -->
+      <div class="roadmap-content" id="roadmap-ds">
+        <h2>📊 Data Scientist Roadmap</h2>
+        <ul class="roadmap-steps">
+          <li><strong>Mathematics & Statistics:</strong> Linear Algebra, Calculus, Probability, Statistics.</li>
+          <li><strong>Programming:</strong> Python (Pandas, NumPy, Scikit-learn) or R.</li>
+          <li><strong>Data Manipulation:</strong> SQL, Data Cleaning, Exploratory Data Analysis (EDA).</li>
+          <li><strong>Data Visualization:</strong> Matplotlib, Seaborn, Tableau, PowerBI.</li>
+          <li><strong>Machine Learning:</strong> Supervised & Unsupervised Learning, Regression, Classification, Clustering.</li>
+          <li><strong>Deep Learning (Optional):</strong> Neural Networks, TensorFlow, PyTorch.</li>
+          <li><strong>Deployment:</strong> Model deployment via Flask/FastAPI, Docker.</li>
+        </ul>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/sWhqqiJuypA" title="Data Scientist Roadmap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <!-- PM -->
+      <div class="roadmap-content" id="roadmap-pm">
+        <h2>🚀 Product Manager Roadmap</h2>
+        <ul class="roadmap-steps">
+          <li><strong>Product Sense:</strong> Understanding user problems, empathy, product strategy.</li>
+          <li><strong>Market Research:</strong> Competitor analysis, identifying market gaps.</li>
+          <li><strong>Agile & Scrum:</strong> Sprints, backlog grooming, user stories, Jira/Trello.</li>
+          <li><strong>UX/UI Principles:</strong> Wireframing, prototyping (Figma, Balsamiq), user testing.</li>
+          <li><strong>Data & Metrics:</strong> KPIs, OKRs, A/B testing, Google Analytics, SQL for PMs.</li>
+          <li><strong>Technical Basics:</strong> Understanding APIs, system architecture, engineering trade-offs.</li>
+          <li><strong>Leadership & Communication:</strong> Stakeholder management, roadmapping, cross-functional collaboration.</li>
+        </ul>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/mNGix52_TVA" title="Product Manager Roadmap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <!-- UX -->
+      <div class="roadmap-content" id="roadmap-ux">
+        <h2>🎨 UX/UI Designer Roadmap</h2>
+        <ul class="roadmap-steps">
+          <li><strong>Design Fundamentals:</strong> Color theory, typography, spacing, layout, visual hierarchy.</li>
+          <li><strong>Tools:</strong> Figma, Adobe XD, Sketch, Webflow.</li>
+          <li><strong>User Research:</strong> Interviews, surveys, personas, journey mapping.</li>
+          <li><strong>UX Principles:</strong> Information architecture, wireframing, usability heuristics.</li>
+          <li><strong>UI Design:</strong> High-fidelity mockups, design systems, interactive components.</li>
+          <li><strong>Prototyping & Testing:</strong> Clickable prototypes, usability testing, A/B testing.</li>
+          <li><strong>Handoff:</strong> Working with developers, exporting assets, understanding basic HTML/CSS.</li>
+        </ul>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/6FyMPagKfrw" title="UX/UI Designer Roadmap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <!-- DevOps -->
+      <div class="roadmap-content" id="roadmap-devops">
+        <h2>⚙️ DevOps Engineer Roadmap</h2>
+        <ul class="roadmap-steps">
+          <li><strong>Operating Systems:</strong> Linux fundamentals, bash scripting, networking basics.</li>
+          <li><strong>Version Control:</strong> Git, branching strategies, GitHub/GitLab.</li>
+          <li><strong>Containers:</strong> Docker, containerization principles.</li>
+          <li><strong>CI/CD:</strong> Jenkins, GitHub Actions, GitLab CI.</li>
+          <li><strong>Cloud Providers:</strong> AWS, Azure, or GCP basics (EC2, S3, IAM, VPC).</li>
+          <li><strong>Container Orchestration:</strong> Kubernetes (Pods, Deployments, Services).</li>
+          <li><strong>Infrastructure as Code (IaC):</strong> Terraform, Ansible.</li>
+          <li><strong>Monitoring & Logging:</strong> Prometheus, Grafana, ELK Stack.</li>
+        </ul>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/-qTL-lcJP_I" title="DevOps Engineer Roadmap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- TOP RIGHT BUTTON -->
+<a href="roadmaps.html" class="top-right-roadmap-btn">🗺️ Roadmaps</a>
+
+<script src="js/utils.js"></script>
+<script>
+  const user = requireAuth();
+  populateSidebar('roadmaps');
+  
+  function showRoadmap(id) {
+    document.querySelectorAll('.roadmap-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.roadmap-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('roadmap-' + id).classList.add('active');
+  }
+</script>
+</body>
+</html>
