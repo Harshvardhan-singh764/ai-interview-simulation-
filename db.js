@@ -2,13 +2,116 @@
 // Database & Authentication Layer (SQLite via node:sqlite)
 // With Strict 10-Digit Phone, RFC Email Validation & Full Login History Audit
 // ============================================================
-const { DatabaseSync } = require('node:sqlite');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'database.sqlite');
-const db = new DatabaseSync(DB_PATH);
+// Vercel serverless environment check:
+// On Vercel, the app root directory is read-only. Store sqlite database in /tmp or use memory.
+const isVercel = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DB_PATH = isVercel ? path.join('/tmp', 'database.sqlite') : path.join(__dirname, 'database.sqlite');
+
+let db;
+try {
+  const { DatabaseSync } = require('node:sqlite');
+  try {
+    db = new DatabaseSync(DB_PATH);
+  } catch (fsErr) {
+    console.warn('[DB] Could not open database at ' + DB_PATH + ', falling back to in-memory SQLite:', fsErr.message);
+    db = new DatabaseSync(':memory:');
+  }
+} catch (sqliteModuleErr) {
+  console.warn('[DB] node:sqlite is not available on this Node runtime, activating in-memory store:', sqliteModuleErr.message);
+  db = createMemorySqlFallback();
+}
+
+function createMemorySqlFallback() {
+  const mem = {
+    users: [],
+    otps: new Map(),
+    login_history: [],
+    failed_logins: new Map()
+  };
+
+  return {
+    exec: () => {},
+    prepare: (sql) => {
+      const s = sql.trim();
+      return {
+        run: (...params) => {
+          if (/INSERT INTO users/i.test(s)) {
+            const [id, name, email, phone, password_hash, avatar, title, bio, role, join_date, stats, skills, preferences, created_at, updated_at, location, linkedin, github, portfolio, experience_level, years_exp, current_company, education, certifications, target_role] = params;
+            mem.users.push({ id, name, email, phone, password_hash, avatar, title, bio, role, join_date, stats, skills, preferences, created_at, updated_at, location, linkedin, github, portfolio, experience_level, years_exp, current_company, education, certifications, target_role, login_count: 0 });
+          } else if (/INSERT OR REPLACE INTO otps/i.test(s)) {
+            const [phone, otp, expires_at] = params;
+            mem.otps.set(phone, { phone, otp, expires_at });
+          } else if (/DELETE FROM otps/i.test(s)) {
+            const [phone] = params;
+            mem.otps.delete(phone);
+          } else if (/INSERT INTO login_history/i.test(s)) {
+            const [id, user_id, identifier, login_method, status, ip_address, user_agent, risk_score, risk_reason, timestamp] = params;
+            mem.login_history.unshift({ id, user_id, identifier, login_method, status, ip_address, user_agent, risk_score, risk_reason, timestamp });
+          } else if (/UPDATE users SET password_hash = \?, updated_at = \? WHERE email = \?/i.test(s)) {
+            const [password_hash, updated_at, email] = params;
+            const u = mem.users.find(x => x.email.toLowerCase() === (email || '').toLowerCase());
+            if (u) { u.password_hash = password_hash; u.updated_at = updated_at; }
+          } else if (/UPDATE users SET login_count/i.test(s)) {
+            const [last_login_at, email] = params;
+            const u = mem.users.find(x => x.email.toLowerCase() === (email || '').toLowerCase());
+            if (u) { u.login_count = (u.login_count || 0) + 1; u.last_login_at = last_login_at; }
+          } else if (/UPDATE users SET/i.test(s)) {
+            const [name, phone, title, bio, avatar, skills, preferences, location, linkedin, github, portfolio, experience_level, years_exp, current_company, education, certifications, target_role, updated_at, email] = params;
+            const u = mem.users.find(x => x.email.toLowerCase() === (email || '').toLowerCase());
+            if (u) {
+              Object.assign(u, { name, phone, title, bio, avatar, skills, preferences, location, linkedin, github, portfolio, experience_level, years_exp, current_company, education, certifications, target_role, updated_at });
+            }
+          } else if (/INSERT INTO failed_logins/i.test(s) || /UPDATE failed_logins/i.test(s)) {
+            const id = params[params.length - 1] || params[0];
+            mem.failed_logins.set(id, { attempts: params[1] || 1, last_failed_at: Date.now() });
+          } else if (/DELETE FROM failed_logins/i.test(s)) {
+            mem.failed_logins.delete(params[0]);
+          }
+          return { changes: 1 };
+        },
+        get: (...params) => {
+          if (/FROM users WHERE email = \?/i.test(s)) {
+            const email = (params[0] || '').toLowerCase();
+            return mem.users.find(x => x.email.toLowerCase() === email) || null;
+          } else if (/FROM users WHERE phone = \?/i.test(s)) {
+            const phone = params[0] || '';
+            return mem.users.find(x => x.phone === phone) || null;
+          } else if (/FROM users WHERE id = \?/i.test(s)) {
+            const id = params[0] || '';
+            return mem.users.find(x => x.id === id) || null;
+          } else if (/FROM otps WHERE phone = \?/i.test(s)) {
+            const phone = params[0] || '';
+            return mem.otps.get(phone) || null;
+          } else if (/FROM failed_logins/i.test(s)) {
+            return mem.failed_logins.get(params[0]) || null;
+          } else if (/SELECT COUNT\(\*\) as total FROM users/i.test(s)) {
+            return { total: mem.users.length };
+          } else if (/SELECT COUNT\(\*\) as total FROM login_history WHERE status = 'SUCCESS'/i.test(s)) {
+            return { total: mem.login_history.filter(x => x.status === 'SUCCESS').length };
+          } else if (/SELECT COUNT\(\*\) as total FROM login_history WHERE status = 'FAILED'/i.test(s)) {
+            return { total: mem.login_history.filter(x => x.status === 'FAILED').length };
+          }
+          return null;
+        },
+        all: (...params) => {
+          if (/FROM login_history WHERE identifier = \?/i.test(s)) {
+            const id = (params[0] || '').toLowerCase();
+            const limit = params[1] || 10;
+            return mem.login_history.filter(x => x.identifier.toLowerCase() === id).slice(0, limit);
+          } else if (/FROM login_history ORDER BY/i.test(s)) {
+            const limit = params[0] || 10;
+            return mem.login_history.slice(0, limit);
+          }
+          return [];
+        }
+      };
+    }
+  };
+}
 
 // Initialize SQLite Schema
 db.exec(`

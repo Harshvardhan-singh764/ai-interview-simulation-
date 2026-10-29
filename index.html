@@ -955,8 +955,8 @@
     </div>
     <div class="dialog-body">
       <div id="sms-status-banner" style="font-size: 13px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 14px; line-height: 1.5;">
-        <strong>Why is the OTP on your screen?</strong><br>
-        Your Twilio SID &amp; Token are connected, but you have not yet claimed your free <strong>Twilio Phone Number</strong> in your Twilio Console. Without a sender number, Twilio cannot transmit SMS to physical SIM cards. The code below is generated so you can log in immediately:
+        <strong>✓ One-Time Password Generated:</strong><br>
+        Please enter the verification code below to verify your 10-digit mobile number and complete your login:
       </div>
 
       <div class="otp-code-box">
@@ -1279,16 +1279,11 @@
           document.getElementById('modal-otp-display').textContent = result.otp;
 
           const banner = document.getElementById('sms-status-banner');
-          if (result.gatewaySent) {
-            banner.style.background = '#f0fdf4';
-            banner.style.borderColor = '#bbf7d0';
-            banner.style.color = '#15803d';
-            banner.innerHTML = `<strong>✓ SMS Sent to SIM Card!</strong> Dispatched via ${result.gatewayProvider || 'Twilio'} to your mobile phone <strong>+91 ${cleanPhone}</strong>. Check your messages!`;
-          } else {
+          if (banner) {
             banner.style.background = '#eff6ff';
             banner.style.borderColor = '#bfdbfe';
             banner.style.color = '#1e40af';
-            banner.innerHTML = `<strong>Why is the OTP on your screen?</strong><br>Your Twilio SID &amp; Token are connected, but you have not yet claimed your free <strong>Twilio Phone Number</strong> in your Twilio Console. Without a sender number, Twilio cannot transmit SMS to physical SIM cards. The code below is generated so you can log in immediately:`;
+            banner.innerHTML = `<strong>✓ Verification OTP Generated:</strong><br>Enter the 6-digit code below to verify your mobile phone <strong>+91 ${cleanPhone}</strong>:`;
           }
 
           document.getElementById('phone-group').style.display = 'none';

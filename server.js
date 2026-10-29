@@ -20,7 +20,7 @@ try {
       }
     }
   });
-  console.log('✓ .env loaded successfully with keys:', Object.keys(process.env).filter(k => k.startsWith('TWILIO_') || k.startsWith('GEMINI_')));
+  console.log('✓ .env loaded successfully with keys:', Object.keys(process.env).filter(k => k.startsWith('GEMINI_')));
 } catch (e) {
   console.log('No .env file found or error parsing it:', e.message);
 }
@@ -69,7 +69,7 @@ function parseBody(req) {
   });
 }
 
-const server = http.createServer(async (req, res) => {
+async function handleRequest(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -166,86 +166,10 @@ const server = http.createServer(async (req, res) => {
       const { phone } = await parseBody(req);
       const result = db.saveOTP(phone);
       if (result.success) {
-        let gatewaySent = false;
-        let gatewayProvider = 'none';
-
-        // 1. Check Twilio Gateway Credentials
-        const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-        const twilioToken = process.env.TWILIO_AUTH_TOKEN;
-        const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
-
-        if (twilioSid && twilioToken && twilioFrom) {
-          try {
-            let formattedPhone = result.phone;
-            if (!formattedPhone.startsWith('+')) {
-              formattedPhone = (formattedPhone.length === 10 ? '+91' : '+') + formattedPhone;
-            }
-
-            const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`;
-            const authHeader = 'Basic ' + Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
-            const bodyParams = new URLSearchParams({
-              To: formattedPhone,
-              From: twilioFrom,
-              Body: `Your AI Interview verification OTP is: ${result.otp}. Valid for 5 minutes.`
-            });
-
-            const twilioRes = await fetch(twilioUrl, {
-              method: 'POST',
-              headers: {
-                'Authorization': authHeader,
-                'Content-Type': 'application/x-www-form-urlencoded'
-              },
-              body: bodyParams.toString()
-            });
-
-            const twilioData = await twilioRes.json().catch(() => ({}));
-            if (twilioRes.ok && twilioData.sid) {
-              gatewaySent = true;
-              gatewayProvider = 'twilio';
-              console.log(`[Twilio] SMS successfully dispatched to ${formattedPhone}. SID: ${twilioData.sid}`);
-            } else {
-              console.warn('[Twilio] Dispatch failed:', twilioData.message || twilioData);
-            }
-          } catch (twilioErr) {
-            console.warn('[Twilio] Connection error:', twilioErr.message);
-          }
-        }
-
-        // 2. Check Fast2SMS Gateway (Alternative for Indian Numbers)
-        const fast2smsKey = process.env.FAST2SMS_API_KEY;
-        if (!gatewaySent && fast2smsKey) {
-          try {
-            const smsRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-              method: 'POST',
-              headers: {
-                'authorization': fast2smsKey,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                route: 'otp',
-                variables_values: result.otp,
-                numbers: result.phone
-              })
-            });
-            const smsData = await smsRes.json().catch(() => ({}));
-            if (smsData && smsData.return) {
-              gatewaySent = true;
-              gatewayProvider = 'fast2sms';
-              console.log(`[Fast2SMS] SMS sent to ${result.phone}`);
-            }
-          } catch (smsErr) {
-            console.warn('[Fast2SMS] Gateway error:', smsErr);
-          }
-        }
-
         sendJson(res, 200, {
           ...result,
-          gatewaySent,
-          gatewayProvider,
-          simulated: !gatewaySent,
-          message: gatewaySent 
-            ? `SMS successfully sent via ${gatewayProvider} to +91 ${result.phone}` 
-            : `Physical SMS requires TWILIO credentials in .env. Test OTP generated.`
+          simulated: true,
+          message: `Verification code generated for +91 ${result.phone}`
         });
       } else {
         sendJson(res, 400, result);
@@ -752,7 +676,9 @@ Return ONLY a valid JSON object matching these exact keys:
     });
     res.end(data);
   });
-});
+}
+
+const server = http.createServer(handleRequest);
 
 function generateFallbackResume(role = 'Software Engineer', level = 'Mid-Level', userName = 'Harsh Vardhan Singh', email = 'harsh@example.com', phone = '+91 98765 43210', location = 'Bangalore, India') {
   const isSenior = level.toLowerCase().includes('senior') || level.toLowerCase().includes('lead');
@@ -833,13 +759,18 @@ function generateFallbackResume(role = 'Software Engineer', level = 'Mid-Level',
   };
 }
 
-server.listen(PORT, () => {
-  console.log(`
-  ╔════════════════════════════════════════════╗
-  ║  🎯 AI Interview Simulation               ║
-  ║  Server running at http://localhost:${PORT}   ║
-  ║  Database: SQLite (users.db initialized)   ║
-  ║  Press Ctrl+C to stop                      ║
-  ╚════════════════════════════════════════════╝
-  `);
-});
+if (require.main === module && !process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`
+    ╔════════════════════════════════════════════╗
+    ║  🎯 AI Interview Simulation               ║
+    ║  Server running at http://localhost:${PORT}   ║
+    ║  Database: SQLite (users.db initialized)   ║
+    ║  Press Ctrl+C to stop                      ║
+    ╚════════════════════════════════════════════╝
+    `);
+  });
+}
+
+module.exports = server;
+module.exports.handler = handleRequest;
