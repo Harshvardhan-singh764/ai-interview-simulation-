@@ -133,6 +133,24 @@ const QUESTION_BANK = {
       { id:'do_a1', q:'Design a highly available, multi-region deployment architecture.', keywords:['multi-region','failover','DNS','latency','data sync','replica','CDN','active-active','RTO','RPO'] },
       { id:'do_a2', q:'How would you respond to a security incident in production?', keywords:['incident','response','isolate','audit','log','patch','rollback','communicate','runbook','forensics'] }
     ]
+  },
+  'Aptitude & Reasoning': {
+    Beginner: [
+      { id:'ap_b1', q:'If a train travels 60 km/h, how far will it travel in 45 minutes?', keywords:['45', 'km', 'distance', 'speed', 'time', 'formula', 'multiply'], isAptitude: true, coreKeywords: ['45'] },
+      { id:'ap_b2', q:'What is the next number in the series: 2, 4, 8, 16, ...?', keywords:['32', 'multiply', 'double', 'pattern', 'power', 'series'], isAptitude: true, coreKeywords: ['32'] },
+      { id:'ap_b3', q:'If 5 workers can build a wall in 10 days, how many days will it take 10 workers?', keywords:['5', 'days', 'inverse', 'proportion', 'man-days', 'work'], isAptitude: true, coreKeywords: ['5'] },
+      { id:'ap_b4', q:'Solve: 15% of 200.', keywords:['30', 'percentage', 'multiply', 'divide', 'fraction'], isAptitude: true, coreKeywords: ['30'] }
+    ],
+    Intermediate: [
+      { id:'ap_m1', q:'A sum of money doubles itself in 5 years at simple interest. What is the rate of interest?', keywords:['20%', '20', 'simple interest', 'principal', 'rate', 'formula', 'time'], isAptitude: true, coreKeywords: ['20', '20%'] },
+      { id:'ap_m2', q:'In a row of 40 children, P is 13th from the left and Q is 9th from the right. How many children are between P and Q?', keywords:['18', 'subtract', 'total', 'position', 'between', 'rank'], isAptitude: true, coreKeywords: ['18'] },
+      { id:'ap_m3', q:'Pointing to a photograph, a man says, "She is the only daughter of my wife\'s mother-in-law." How is the woman related to the man?', keywords:['sister', 'wife', 'mother-in-law', 'daughter', 'blood relation', 'family tree'], isAptitude: true, coreKeywords: ['sister'] }
+    ],
+    Advanced: [
+      { id:'ap_a1', q:'Two pipes A and B can fill a tank in 20 and 30 minutes respectively. If both are opened together, how much time will it take to fill the tank?', keywords:['12', 'minutes', 'work', 'efficiency', 'fraction', 'LCM', 'capacity'], isAptitude: true, coreKeywords: ['12'] },
+      { id:'ap_a2', q:'In how many ways can the letters of the word "APPLE" be arranged?', keywords:['60', 'permutation', 'factorial', 'repeat', 'arrangement', 'divide'], isAptitude: true, coreKeywords: ['60'] },
+      { id:'ap_a3', q:'Find the probability of getting a sum of 9 when two dice are thrown simultaneously.', keywords:['1/9', '4/36', 'probability', 'favorable', 'outcomes', 'total', 'sample space'], isAptitude: true, coreKeywords: ['1/9', '4/36'] }
+    ]
   }
 };
 
@@ -163,7 +181,7 @@ function _generateMockFeedback(role, difficulty, count, overallScore) {
 }
 
 function _genHistory() {
-  const roles = ['Software Engineer', 'Data Scientist', 'Product Manager', 'UX Designer', 'DevOps Engineer'];
+  const roles = ['Software Engineer', 'Data Scientist', 'Product Manager', 'UX Designer', 'DevOps Engineer', 'Aptitude & Reasoning'];
   const diffs = ['Beginner', 'Intermediate', 'Advanced'];
   const counts = [3, 5, 7];
   const history = [];
