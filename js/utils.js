@@ -17,7 +17,8 @@ const ROLES = [
   { id: 'data-scientist', name: 'Data Scientist', emoji: '📊' },
   { id: 'product-manager', name: 'Product Manager', emoji: '🚀' },
   { id: 'ux-designer', name: 'UX Designer', emoji: '🎨' },
-  { id: 'devops-engineer', name: 'DevOps Engineer', emoji: '⚙️' }
+  { id: 'devops-engineer', name: 'DevOps Engineer', emoji: '⚙️' },
+  { id: 'aptitude', name: 'Aptitude', emoji: '🧠' }
 ];
 
 const QUESTION_BANK = {
@@ -142,21 +143,20 @@ const DIFFICULTY_TIMERS = { Beginner: 120, Intermediate: 90, Advanced: 60 };
 // ============================================================
 
 function _generateMockFeedback(role, difficulty, count, overallScore) {
-  const roleBank = QUESTION_BANK[role];
-  const diffBank = roleBank ? (roleBank[difficulty] || roleBank['Beginner']) : QUESTION_BANK['Software Engineer']['Beginner'];
+  const roleBank = typeof MCQ_BANK !== 'undefined' ? MCQ_BANK[role] : null;
+  const diffBank = roleBank ? (roleBank[difficulty] || roleBank['Beginner']) : (typeof MCQ_BANK !== 'undefined' ? MCQ_BANK['Software Engineer']['Beginner'] : []);
   const feedbacks = [];
   for (let i = 0; i < count; i++) {
-    const q = diffBank[i % diffBank.length];
+    const q = diffBank[i % Math.max(diffBank.length, 1)];
     const qScore = Math.min(100, Math.max(20, overallScore + Math.round((Math.random() - 0.5) * 30)));
-    const matched = q ? q.keywords.slice(0, Math.floor(Math.random() * q.keywords.length)) : [];
     feedbacks.push({
       question: q ? q.q : `Question ${i+1} for ${role}`,
-      answer: 'The candidate provided a structured response covering the main concepts with some specific examples.',
+      answer: 'Selected Option',
       score: qScore,
-      keywords: q ? q.keywords : [],
-      matchedKeywords: matched,
+      keywords: [],
+      matchedKeywords: [],
       grade: qScore >= 85 ? 'A' : qScore >= 70 ? 'B' : qScore >= 55 ? 'C' : qScore >= 40 ? 'D' : 'F',
-      suggestion: qScore >= 70 ? 'Good answer! Consider adding more real-world examples.' : 'Review the core concepts and practice structured answers.'
+      suggestion: q ? q.exp : 'Good answer.'
     });
   }
   return feedbacks;
@@ -189,9 +189,24 @@ function _genHistory() {
 // AUTH UTILITIES
 // ============================================================
 
+function getDbUsers() {
+  const raw = localStorage.getItem('ai_users_db');
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveDbUsers(users) {
+  localStorage.setItem('ai_users_db', JSON.stringify(users));
+}
+
 function getUser() {
   const raw = sessionStorage.getItem('ai_user');
-  return raw ? JSON.parse(raw) : null;
+  if (raw) {
+    const user = JSON.parse(raw);
+    // Refresh user from DB in case profile was updated elsewhere
+    const dbUser = getDbUsers().find(u => u.email === user.email);
+    return dbUser || user;
+  }
+  return null;
 }
 
 function requireAuth() {
@@ -200,12 +215,421 @@ function requireAuth() {
   return user;
 }
 
-function doLogin(email, password) {
-  if (!email.trim() || !password.trim()) return { success: false, error: 'Please enter your email and password.' };
-  if (password.length < 4) return { success: false, error: 'Password must be at least 4 characters.' };
-  const user = { ...MOCK_USER, email: email.trim() };
+// ============================================================
+// CREDENTIAL VALIDATORS (10-DIGIT PHONE & RFC EMAIL)
+// ============================================================
+
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.replace(/[\u200B-\u200D\uFEFF]/g, '').trim().toLowerCase();
+  if (clean.length < 5 || clean.length > 254) return false;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  if (!emailRegex.test(clean)) return false;
+  const [local, domain] = clean.split('@');
+  if (!local || local.length > 64) return false;
+  if (!domain || !domain.includes('.')) return false;
+  const parts = domain.split('.');
+  if (parts.some(p => p.length === 0 || p.length > 63)) return false;
+  const tld = parts[parts.length - 1];
+  return /^[a-zA-Z]{2,24}$/.test(tld);
+}
+
+function normalizePhoneNumber(rawPhone) {
+  if (!rawPhone || typeof rawPhone !== 'string') return null;
+  const clean = rawPhone.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+  const digits = clean.replace(/\D/g, '');
+  let normalized = null;
+  if (digits.length === 10) normalized = digits;
+  else if (digits.length === 11 && digits.startsWith('1')) normalized = digits.slice(1);
+  else if (digits.length === 12 && digits.startsWith('91')) normalized = digits.slice(2);
+  
+  if (normalized) {
+    if (/^(\d)\1{9}$/.test(normalized)) return null;
+    return normalized;
+  }
+  return null;
+}
+
+async function doLogin(email, password) {
+  if (!email || !email.trim()) {
+    return { success: false, error: 'Please enter your email address.' };
+  }
+  const cleanEmail = email.trim().toLowerCase();
+  if (!isValidEmail(cleanEmail)) {
+    return { success: false, error: 'Please enter a valid email address (e.g. name@example.com).' };
+  }
+  if (!password || !password.trim()) {
+    return { success: false, error: 'Please enter your password.' };
+  }
+  const cleanPass = password.trim();
+
+  // 1. Try Backend SQLite Database API
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      sessionStorage.setItem('ai_user', JSON.stringify(data.user));
+      // Sync local storage cache
+      const users = getDbUsers();
+      const idx = users.findIndex(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...data.user };
+      } else {
+        users.push({ ...data.user, password: cleanPass });
+      }
+      saveDbUsers(users);
+      return { success: true, user: data.user };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (netErr) {
+    console.warn('Backend server not reachable, using local storage database fallback:', netErr);
+  }
+
+  // 2. Fallback to Local Storage Database (Offline / file://)
+  const users = getDbUsers();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+  
+  if (!user) {
+    if (cleanEmail === 'harsh@example.com' && cleanPass === 'demo1234') {
+      const newUser = { ...MOCK_USER, email: cleanEmail, password: cleanPass };
+      users.push(newUser);
+      saveDbUsers(users);
+      sessionStorage.setItem('ai_user', JSON.stringify(newUser));
+      return { success: true, user: newUser };
+    }
+    return { success: false, error: 'Account not found with this email. Please register.' };
+  }
+  
+  // STRICT password check
+  if (user.password !== cleanPass) {
+    return { success: false, error: 'Incorrect password. Please try again.' };
+  }
+  
   sessionStorage.setItem('ai_user', JSON.stringify(user));
+  return { success: true, user };
+}
+
+async function doRegister(name, email, phone, password) {
+  if (!name || !name.trim()) {
+    return { success: false, error: 'Full name is required.' };
+  }
+  if (!email || !email.trim()) {
+    return { success: false, error: 'Email address is required.' };
+  }
+  const cleanEmail = email.trim().toLowerCase();
+  if (!isValidEmail(cleanEmail)) {
+    return { success: false, error: 'Please enter a valid email address (e.g. name@example.com).' };
+  }
+  if (!phone || !phone.trim()) {
+    return { success: false, error: '10-digit phone number is required.' };
+  }
+  const cleanPhone = normalizePhoneNumber(phone);
+  if (!cleanPhone) {
+    return { success: false, error: 'Please enter a valid 10-digit mobile number (e.g. 9876543210).' };
+  }
+  if (!password || password.trim().length < 4) {
+    return { success: false, error: 'Password must be at least 4 characters long.' };
+  }
+  const cleanName = name.trim();
+  const cleanPass = password.trim();
+
+  // 1. Try Backend SQLite Database API
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: cleanName, email: cleanEmail, phone: cleanPhone, password: cleanPass })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      sessionStorage.setItem('ai_user', JSON.stringify(data.user));
+      const users = getDbUsers();
+      users.push({ ...data.user, password: cleanPass });
+      saveDbUsers(users);
+      return { success: true, user: data.user };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (netErr) {
+    console.warn('Backend server not reachable, saving to local database fallback:', netErr);
+  }
+
+  // 2. Fallback to Local Storage Database (Offline)
+  const users = getDbUsers();
+  if (users.find(u => u.email.toLowerCase() === cleanEmail)) {
+    return { success: false, error: 'An account with this email already exists. Please log in.' };
+  }
+  if (users.find(u => u.phone === cleanPhone)) {
+    return { success: false, error: 'An account with this 10-digit phone number already exists.' };
+  }
+  
+  const newUser = {
+    id: 'u' + Date.now(),
+    name: cleanName,
+    email: cleanEmail,
+    phone: cleanPhone,
+    password: cleanPass,
+    avatar: cleanName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U',
+    joinDate: new Date().toISOString().split('T')[0],
+    role: 'user',
+    title: 'Software Engineer',
+    stats: {
+      interviewsCompleted: 0,
+      avgScore: 0,
+      hoursPracticed: '0h',
+      streakDays: 1,
+      topRole: 'Software Engineer',
+      topDifficulty: 'Beginner'
+    },
+    skills: [],
+    preferences: {
+      defaultRole: 'Software Engineer',
+      defaultDifficulty: 'Beginner',
+      cameraDefault: true,
+      micDefault: true,
+      emailAlerts: true,
+      weeklyReport: false,
+      darkMode: false
+    }
+  };
+  
+  users.push(newUser);
+  saveDbUsers(users);
+  sessionStorage.setItem('ai_user', JSON.stringify(newUser));
+  return { success: true, user: newUser };
+}
+
+async function doGoogleLogin(email) {
+  if (!email || !email.trim()) return { success: false, error: 'Google login cancelled.' };
+  const cleanEmail = email.trim();
+
+  try {
+    const res = await fetch('/api/auth/google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      sessionStorage.setItem('ai_user', JSON.stringify(data.user));
+      return { success: true, user: data.user };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for Google login, using local fallback:', e);
+  }
+  
+  const users = getDbUsers();
+  let user = users.find(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+  
+  if (!user) {
+    const namePart = cleanEmail.split('@')[0];
+    user = {
+      id: 'u' + Date.now(),
+      name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      email: cleanEmail,
+      password: 'GOOGLE_OAUTH_NO_PASSWORD',
+      avatar: namePart.slice(0, 2).toUpperCase(),
+      joinDate: new Date().toISOString().split('T')[0],
+      role: 'user',
+      title: 'New Member'
+    };
+    users.push(user);
+    saveDbUsers(users);
+  }
+  
+  sessionStorage.setItem('ai_user', JSON.stringify(user));
+  return { success: true, user };
+}
+
+async function doForgotPassword(email) {
+  if (!email || !email.trim()) return { success: false, error: 'Please provide an email address.' };
+  const cleanEmail = email.trim();
+
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return { success: true, otp: data.otp, user: data.user };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for forgot password, using local fallback:', e);
+  }
+
+  const users = getDbUsers();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+  if (!user) return { success: false, error: 'Account not found with this email.' };
+  
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  return { success: true, user: user, otp };
+}
+
+async function requestOTP(phone) {
+  if (!phone || !phone.trim()) return { success: false, error: 'Please enter your 10-digit mobile number.' };
+  const cleanPhone = normalizePhoneNumber(phone);
+  if (!cleanPhone) {
+    return { success: false, error: 'Please enter a valid 10-digit mobile number (e.g., 9876543210).' };
+  }
+
+  try {
+    const res = await fetch('/api/auth/otp-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return { success: true, otp: data.otp, phone: data.phone || cleanPhone };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for OTP request, using local fallback:', e);
+  }
+  
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  sessionStorage.setItem('ai_mock_otp', JSON.stringify({ phone: cleanPhone, otp }));
+  return { success: true, otp, phone: cleanPhone };
+}
+
+async function verifyOTP(phone, enteredOtp) {
+  if (!phone || !enteredOtp) return { success: false, error: 'Phone number and 6-digit OTP code are required.' };
+  const cleanPhone = normalizePhoneNumber(phone);
+  if (!cleanPhone) {
+    return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+  }
+  const cleanOtp = enteredOtp.trim();
+
+  try {
+    const res = await fetch('/api/auth/otp-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone, otp: cleanOtp })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      sessionStorage.setItem('ai_user', JSON.stringify(data.user));
+      return { success: true, user: data.user };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for OTP verify, using local fallback:', e);
+  }
+
+  const data = JSON.parse(sessionStorage.getItem('ai_mock_otp') || '{}');
+  if (!data || data.phone !== cleanPhone) {
+    return { success: false, error: 'OTP request expired or invalid. Please request again.' };
+  }
+  if (data.otp !== cleanOtp) {
+    return { success: false, error: 'Invalid OTP code. Please check and try again.' };
+  }
+  
+  const users = getDbUsers();
+  let user = users.find(u => u.phone === cleanPhone);
+  
+  if (!user) {
+    user = {
+      id: 'u' + Date.now(),
+      name: 'User ' + cleanPhone.slice(-4),
+      email: cleanPhone.replace(/[^\d]/g, '') + '@phone.user',
+      phone: cleanPhone,
+      password: 'OTP_LOGIN',
+      avatar: 'U',
+      joinDate: new Date().toISOString().split('T')[0],
+      role: 'user',
+      title: 'New Member'
+    };
+    users.push(user);
+    saveDbUsers(users);
+  }
+  
+  sessionStorage.setItem('ai_user', JSON.stringify(user));
+  sessionStorage.removeItem('ai_mock_otp');
+  return { success: true, user };
+}
+
+async function updatePassword(email, newPassword, currentPassword = null) {
+  if (!email || !email.trim()) return { success: false, error: 'Email is required.' };
+  if (!newPassword || newPassword.trim().length < 4) return { success: false, error: 'Password must be at least 4 characters long.' };
+  const cleanEmail = email.trim();
+  const cleanNew = newPassword.trim();
+
+  try {
+    const res = await fetch('/api/auth/update-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail, newPassword: cleanNew, currentPassword })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      const users = getDbUsers();
+      const idx = users.findIndex(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+      if (idx !== -1) {
+        users[idx].password = cleanNew;
+        saveDbUsers(users);
+      }
+      return { success: true };
+    } else if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for password update, using local fallback:', e);
+  }
+
+  const users = getDbUsers();
+  const userIndex = users.findIndex(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+  if (userIndex === -1) return { success: false, error: 'Account not found in database.' };
+
+  if (currentPassword && users[userIndex].password && users[userIndex].password !== currentPassword) {
+    return { success: false, error: 'Current password is incorrect.' };
+  }
+  
+  users[userIndex].password = cleanNew;
+  saveDbUsers(users);
   return { success: true };
+}
+
+async function updateUserProfile(updatedUser) {
+  if (!updatedUser || !updatedUser.email) return { success: false, error: 'Email required' };
+  const cleanEmail = updatedUser.email.trim();
+
+  try {
+    const res = await fetch('/api/auth/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedUser)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      updatedUser = { ...updatedUser, ...data.user };
+    }
+  } catch (e) {
+    console.warn('Backend not reachable for profile update, using local fallback:', e);
+  }
+
+  const users = getDbUsers();
+  const userIndex = users.findIndex(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+  if (userIndex !== -1) {
+    updatedUser.password = users[userIndex].password;
+    users[userIndex] = updatedUser;
+    saveDbUsers(users);
+  } else {
+    users.push(updatedUser);
+    saveDbUsers(users);
+  }
+  sessionStorage.setItem('ai_user', JSON.stringify(updatedUser));
+  return { success: true, user: updatedUser };
 }
 
 function doLogout() {
@@ -239,6 +663,16 @@ function populateSidebar(activePage) {
       backdrop.style.display = 'none';
     });
   }
+
+  // Handle sidebar to-dos
+  const todos = JSON.parse(localStorage.getItem('ai_sidebar_todos') || '{}');
+  document.querySelectorAll('.todo-cb').forEach(cb => {
+    cb.checked = !!todos[cb.dataset.id];
+    cb.addEventListener('change', (e) => {
+      todos[e.target.dataset.id] = e.target.checked;
+      localStorage.setItem('ai_sidebar_todos', JSON.stringify(todos));
+    });
+  });
 }
 
 // ============================================================
@@ -268,40 +702,55 @@ function clearInterviewSession() {
   sessionStorage.removeItem('ai_interview_session');
 }
 
-function generateQuestions(role, difficulty, count) {
-  const bank = (QUESTION_BANK[role] && QUESTION_BANK[role][difficulty]) ||
-               (QUESTION_BANK[role] && QUESTION_BANK[role]['Beginner']) ||
-               QUESTION_BANK['Software Engineer']['Beginner'];
-  const shuffled = [...bank].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, Math.min(count, shuffled.length));
+async function generateQuestions(role, difficulty, count) {
+  try {
+    const res = await fetch('/api/generate-questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role, difficulty, count })
+    });
+    if (!res.ok) throw new Error('Failed to fetch questions');
+    return await res.json();
+  } catch (e) {
+    console.error('AI question generation failed, using fallback bank.', e);
+    // Fallback to static bank if AI fails
+    if (typeof MCQ_BANK === 'undefined') return [];
+    const bank = (MCQ_BANK[role] && MCQ_BANK[role][difficulty]) ||
+                 (MCQ_BANK[role] && MCQ_BANK[role]['Beginner']) ||
+                 MCQ_BANK['Software Engineer']['Beginner'];
+    const shuffled = [...bank].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(count, shuffled.length));
+  }
 }
 
-function evaluateAnswer(question, answer) {
-  const trimmed = (answer || '').trim();
-  if (trimmed.length < 15) {
+function evaluateAnswer(question, selectedIndex) {
+  if (selectedIndex === null || selectedIndex === undefined || selectedIndex === -1 || selectedIndex === '') {
     return {
-      score: Math.floor(Math.random() * 15 + 5),
+      score: 0,
       matchedKeywords: [],
-      allKeywords: question.keywords,
-      suggestion: 'Your answer was too short. Elaborate on the key concepts with specific examples and detail.',
+      allKeywords: [],
+      suggestion: 'No answer selected. ' + (question.exp || ''),
       grade: 'F'
     };
   }
-  const lc = trimmed.toLowerCase();
-  const matchedKeywords = question.keywords.filter(kw => lc.includes(kw.toLowerCase()));
-  const keywordScore = (matchedKeywords.length / Math.max(question.keywords.length, 1)) * 55;
-  const lengthScore = Math.min(trimmed.length / 600 * 28, 28);
-  const baseScore = 12;
-  const noise = Math.round((Math.random() - 0.5) * 8);
-  const totalScore = Math.min(Math.max(Math.round(baseScore + keywordScore + lengthScore + noise), 5), 100);
-  let grade, suggestion;
-  const missed = question.keywords.filter(k => !matchedKeywords.includes(k)).slice(0, 3);
-  if (totalScore >= 85) { grade = 'A'; suggestion = 'Excellent! You covered the key concepts thoroughly. Adding real-world examples would make it even stronger.'; }
-  else if (totalScore >= 70) { grade = 'B'; suggestion = `Good answer! Consider mentioning: ${missed.join(', ')} for a complete response.`; }
-  else if (totalScore >= 55) { grade = 'C'; suggestion = `Decent attempt. Focus more on: ${missed.join(', ')}. Structure your answer with clear, logical points.`; }
-  else if (totalScore >= 40) { grade = 'D'; suggestion = 'Your answer needs improvement. Review core concepts and practice giving structured, detailed explanations.'; }
-  else { grade = 'F'; suggestion = 'This topic needs significant study. Review the fundamentals and practice with detailed, structured answers.'; }
-  return { score: totalScore, matchedKeywords, allKeywords: question.keywords, suggestion, grade };
+  const isCorrect = parseInt(selectedIndex) === question.correctIndex;
+  if (isCorrect) {
+    return {
+      score: 100,
+      matchedKeywords: [],
+      allKeywords: [],
+      suggestion: 'Correct! ' + (question.exp || ''),
+      grade: 'A'
+    };
+  } else {
+    return {
+      score: 0,
+      matchedKeywords: [],
+      allKeywords: [],
+      suggestion: 'Incorrect. ' + (question.exp || ''),
+      grade: 'F'
+    };
+  }
 }
 
 function getScoreColor(score) {
@@ -358,3 +807,99 @@ function getInterviewById(id) {
 function genId() {
   return 'i' + Date.now() + Math.random().toString(36).slice(2,6);
 }
+
+// ============================================================
+// FLOATING TO-DO WIDGET
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.body) return;
+
+  const todoHtml = `
+    <div id="floating-todo-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: inherit;">
+      <button id="ft-toggle-btn" style="background: var(--primary); color: white; border: none; border-radius: 50%; width: 56px; height: 56px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(30,58,138,0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+        📝
+      </button>
+      <div id="ft-panel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 300px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid var(--card-border); flex-direction: column;">
+        <div style="background: var(--primary); color: white; padding: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+          <span>My To-Do List</span>
+          <button id="ft-close-btn" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 16px;">✖</button>
+        </div>
+        <div id="ft-list" style="padding: 16px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+          <!-- Items will be injected here -->
+        </div>
+        <div style="padding: 16px; border-top: 1px solid var(--card-border); display: flex; gap: 8px;">
+          <input type="text" id="ft-input" placeholder="Add a task..." style="flex: 1; padding: 8px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 13px; outline: none;">
+          <button id="ft-add-btn" style="background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 700;">+</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', todoHtml);
+
+  const toggleBtn = document.getElementById('ft-toggle-btn');
+  const panel = document.getElementById('ft-panel');
+  const closeBtn = document.getElementById('ft-close-btn');
+  const addBtn = document.getElementById('ft-add-btn');
+  const input = document.getElementById('ft-input');
+  const list = document.getElementById('ft-list');
+
+  let customTodos = JSON.parse(localStorage.getItem('ai_custom_todos') || '[]');
+
+  function renderCustomTodos() {
+    list.innerHTML = '';
+    if (customTodos.length === 0) {
+      list.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center;">No tasks yet.</div>';
+    }
+    customTodos.forEach((t, i) => {
+      const item = document.createElement('label');
+      item.style.cssText = 'display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-dark); cursor: pointer; line-height: 1.4;';
+      item.innerHTML = `
+        <input type="checkbox" data-index="${i}" ${t.done ? 'checked' : ''} style="margin-top:2px; accent-color: var(--primary); cursor:pointer;">
+        <span style="flex:1; ${t.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${t.text}</span>
+        <span class="ft-del" data-index="${i}" style="color: #ef4444; cursor: pointer; font-size: 12px;">🗑</span>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    if (panel.style.display === 'flex') input.focus();
+  });
+
+  closeBtn.addEventListener('click', () => panel.style.display = 'none');
+
+  function addTodo() {
+    const val = input.value.trim();
+    if (val) {
+      customTodos.push({ text: val, done: false });
+      localStorage.setItem('ai_custom_todos', JSON.stringify(customTodos));
+      input.value = '';
+      renderCustomTodos();
+    }
+  }
+
+  addBtn.addEventListener('click', addTodo);
+  input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
+
+  list.addEventListener('change', (e) => {
+    if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+      const idx = e.target.dataset.index;
+      customTodos[idx].done = e.target.checked;
+      localStorage.setItem('ai_custom_todos', JSON.stringify(customTodos));
+      renderCustomTodos();
+    }
+  });
+
+  list.addEventListener('click', (e) => {
+    if (e.target.classList.contains('ft-del')) {
+      const idx = e.target.dataset.index;
+      customTodos.splice(idx, 1);
+      localStorage.setItem('ai_custom_todos', JSON.stringify(customTodos));
+      renderCustomTodos();
+    }
+  });
+
+  renderCustomTodos();
+});

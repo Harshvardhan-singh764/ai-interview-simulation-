@@ -3,348 +3,1455 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Interview Simulation — Login</title>
-  <meta name="description" content="Practice AI-powered mock interviews with real-time feedback. Login to start.">
+  <title>AI Interview Simulation — Sign In</title>
+  <meta name="description" content="Sign in to AI Interview Simulation. Practice AI-driven technical and behavioral interviews with real-time feedback.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    body { background: #0a192f; }
-
-    .login-page {
+    /* RESET & BASE */
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
       min-height: 100vh;
-      display: flex;
-      align-items: stretch;
-    }
-
-    /* LEFT PANEL */
-    .login-left {
-      width: 48%;
-      background: linear-gradient(145deg, #0a192f 0%, #1e3a8a 60%, #0a192f 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px 48px;
+      background-color: #ffffff;
+      background-image: 
+        radial-gradient(circle at 50% 0%, #dbeafe 0%, #ffffff 65%),
+        radial-gradient(circle at 10% 90%, #eff6ff 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, #e0e7ff 0%, transparent 40%);
+      background-attachment: fixed;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+      padding: 32px 16px;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
-    .login-left::before {
-      content: '';
-      position: absolute;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
-      top: -120px; right: -120px;
+    /* Ambient background grid */
+    .ambient-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .login-left::after {
-      content: '';
-      position: absolute;
-      width: 400px; height: 400px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(30,58,138,0.3) 0%, transparent 70%);
-      bottom: -100px; left: -100px;
+    /* CENTER AUTH WRAPPER */
+    .auth-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      animation: authCardEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .brand-wrap { z-index: 1; text-align: center; }
-
-    .brand-icon-big {
-      width: 90px; height: 90px;
-      background: linear-gradient(135deg, #3b82f6, #1e3a8a);
-      border-radius: 24px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 44px;
-      margin: 0 auto 28px;
-      box-shadow: 0 12px 40px rgba(59,130,246,0.4);
-      animation: float 3s ease-in-out infinite;
+    @keyframes authCardEnter {
+      from { opacity: 0; transform: translateY(12px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    @keyframes float {
-      0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+    /* BRAND HEADER OUTSIDE CARD */
+    .auth-header {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
-    .brand-wrap h1 {
-      font-size: 36px; font-weight: 800;
-      color: #f0f4ff; margin-bottom: 12px;
-      letter-spacing: -1px;
-    }
-
-    .brand-wrap p {
-      font-size: 16px; color: rgba(204,214,246,0.75);
-      max-width: 320px; line-height: 1.8; margin: 0 auto;
-    }
-
-    .feature-list {
-      margin-top: 52px; z-index: 1;
-      display: flex; flex-direction: column; gap: 18px;
-      width: 100%; max-width: 340px;
-    }
-
-    .feature-item {
-      display: flex; align-items: center; gap: 14px;
-      color: rgba(204,214,246,0.85); font-size: 14px;
-      background: rgba(255,255,255,0.05);
-      padding: 12px 16px; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.07);
-      animation: fadeInUp 0.5s ease forwards;
-      opacity: 0;
-    }
-
-    .feature-item:nth-child(1) { animation-delay: 0.1s; }
-    .feature-item:nth-child(2) { animation-delay: 0.2s; }
-    .feature-item:nth-child(3) { animation-delay: 0.3s; }
-    .feature-item:nth-child(4) { animation-delay: 0.4s; }
-
-    .feat-icon {
-      width: 38px; height: 38px;
-      background: rgba(59,130,246,0.2);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-
-    /* RIGHT PANEL */
-    .login-right {
-      flex: 1;
-      background: white;
-      display: flex;
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      border-radius: 14px;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 60px 48px;
+      font-size: 24px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
     }
 
-    .login-form-wrap {
-      width: 100%; max-width: 400px;
-      animation: fadeInUp 0.6s ease;
-    }
-
-    .login-form-wrap h2 {
-      font-size: 30px; font-weight: 800;
-      color: #0a192f; margin-bottom: 6px;
+    .auth-title {
+      font-size: 22px;
+      font-weight: 800;
       letter-spacing: -0.5px;
+      color: #0f172a;
+      margin: 0 0 4px;
     }
 
-    .login-form-wrap .subtitle {
-      font-size: 14px; color: #64748b; margin-bottom: 32px;
+    .auth-subtitle {
+      font-size: 13.5px;
+      color: #64748b;
+      margin: 0;
+      font-weight: 400;
     }
 
-    .demo-badge {
-      display: flex; align-items: center; gap: 10px;
-      background: #eff6ff; border: 1px solid #bfdbfe;
-      border-radius: 8px; padding: 12px 16px;
-      font-size: 13px; color: #1d4ed8;
-      margin-bottom: 28px;
+    /* CENTER AUTH BOX: RICH ROYAL BLUE */
+    .auth-card {
+      background: linear-gradient(155deg, #1e3a8a 0%, #1e40af 55%, #172554 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      padding: 34px 32px;
+      box-shadow: 
+        0 25px 60px -15px rgba(30, 58, 138, 0.4),
+        0 0 0 1px rgba(30, 58, 138, 0.12),
+        0 4px 16px rgba(30, 58, 138, 0.2);
+      color: #ffffff;
     }
 
-    .input-wrap { position: relative; }
+    /* SEGMENTED TABS INSIDE BLUE CARD */
+    .auth-tabs {
+      display: flex;
+      background: rgba(10, 25, 47, 0.35);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      margin-bottom: 22px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .auth-tab:hover {
+      color: #ffffff;
+    }
+
+    .auth-tab.active {
+      background: #ffffff;
+      color: #1e3a8a;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ALERTS INSIDE BLUE CARD */
+    .alert {
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.2) !important;
+      color: #fecaca !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.2) !important;
+      color: #bbf7d0 !important;
+      border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    }
+
+    /* FORM ELEMENTS INSIDE BLUE CARD */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: inline-block;
+    }
+
+    .status-hint {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #93c5fd;
+      transition: color 0.2s;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
 
     .input-icon {
       position: absolute;
-      left: 14px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 16px; color: #94a3b8;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(224, 231, 255, 0.7);
       pointer-events: none;
     }
 
     .input-wrap .form-control {
-      padding-left: 44px;
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .input-wrap .form-control::placeholder {
+      color: rgba(203, 213, 225, 0.65);
+    }
+
+    .input-wrap .form-control:focus {
+      outline: none;
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
     }
 
     .pass-toggle {
       position: absolute;
-      right: 14px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none;
-      cursor: pointer; font-size: 16px;
-      color: #94a3b8; padding: 2px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: rgba(224, 231, 255, 0.75);
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.2s;
     }
 
-    .pass-toggle:hover { color: #3b82f6; }
+    .pass-toggle:hover {
+      color: #ffffff;
+    }
 
+    /* REMEMBER & FORGOT */
     .remember-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 0 20px;
+      font-size: 13px;
     }
 
     .remember-row label {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #64748b; cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #cbd5e1;
+      cursor: pointer;
+      user-select: none;
     }
 
     .remember-row label input[type="checkbox"] {
-      width: 15px; height: 15px;
-      accent-color: #1e3a8a;
+      width: 16px;
+      height: 16px;
+      accent-color: #3b82f6;
+      cursor: pointer;
     }
 
     .forgot-link {
-      font-size: 13px; font-weight: 600;
-      color: #3b82f6; text-decoration: none;
+      color: #93c5fd;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s;
     }
 
-    .forgot-link:hover { color: #1d4ed8; }
+    .forgot-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
 
+    /* ACTION BUTTONS */
+    .btn-submit {
+      width: 100%;
+      padding: 12.5px;
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      color: #1e3a8a;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      font-family: inherit;
+    }
+
+    .btn-submit:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* DIVIDER */
     .divider {
-      display: flex; align-items: center; gap: 12px;
-      margin: 20px 0; color: #cbd5e1; font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 16px;
+      color: rgba(203, 213, 225, 0.7);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .divider::before,.divider::after {
-      content: ''; flex: 1;
-      height: 1px; background: #e2e8f0;
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.18);
     }
 
+    /* SOCIAL BUTTON */
     .social-btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 11px;
+      width: 100%;
+      padding: 11px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .social-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: #ffffff;
+    }
+
+    /* SUBTLE DEMO FOOTER */
+    .demo-strip {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    .demo-pill {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .demo-pill:hover {
+      background: #ffffff;
+      color: #1e3a8a;
+    }
+
+    /* PAGE FOOTER */
+    .auth-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Password Strength Indicator */
+    .pass-strength-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .pass-strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: all 0.3s;
+    }
+
+    /* NATIVE MODAL DIALOGS */
+    dialog.auth-dialog {
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35);
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+
+    dialog::backdrop {
+      overflow: hidden;
+      overscroll-behavior: contain;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+    }
+
+    .dialog-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dialog-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dialog-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+
+    .dialog-close:hover {
+      color: #0f172a;
+      background: #f1f5f9;
+    }
+
+    .dialog-body {
+      padding: 24px;
+    }
+
+    /* Google Account List Items */
+    .google-acc-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
       border: 1.5px solid #e2e8f0;
-      border-radius: 8px; background: white;
-      font-size: 14px; font-weight: 600;
-      color: #334155; cursor: pointer;
-      transition: all 0.2s ease; font-family: inherit;
+      border-radius: 10px;
       margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #ffffff;
+      text-align: left;
+      width: 100%;
     }
 
-    .social-btn:hover { background: #f8faff; border-color: #3b82f6; }
-
-    .signup-link {
-      text-align: center; margin-top: 20px;
-      font-size: 13px; color: #64748b;
+    .google-acc-item:hover {
+      border-color: #2563eb;
+      background: #f8fafc;
+      transform: translateY(-1px);
     }
 
-    .signup-link a {
-      color: #3b82f6; font-weight: 600;
-      text-decoration: none; cursor: pointer;
+    .google-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: #1d4ed8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid #bfdbfe;
     }
 
-    @media (max-width: 768px) {
-      .login-left { display: none; }
-      .login-right { padding: 32px 24px; }
+    .google-acc-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .google-acc-email {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* OTP Code Display Box */
+    .otp-code-box {
+      background: #f8fafc;
+      border: 2px dashed #3b82f6;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .otp-digits {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: #1e40af;
+      font-family: monospace;
+      margin-bottom: 6px;
+    }
+
+    .otp-note {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div class="login-page">
+  <div class="ambient-grid"></div>
 
-    <!-- LEFT BRANDING PANEL -->
-    <div class="login-left">
-      <div class="brand-wrap">
-        <div class="brand-icon-big">🎯</div>
-        <h1>AI Interview</h1>
-        <p>Level up your interview skills with AI-powered practice sessions and real-time feedback.</p>
-      </div>
-      <div class="feature-list">
-        <div class="feature-item">
-          <div class="feat-icon">🤖</div>
-          <span>AI questions tailored to your role & level</span>
-        </div>
-        <div class="feature-item">
-          <div class="feat-icon">🎙️</div>
-          <span>Voice-to-text answer input</span>
-        </div>
-        <div class="feature-item">
-          <div class="feat-icon">⚡</div>
-          <span>Instant scoring & keyword analysis</span>
-        </div>
-        <div class="feature-item">
-          <div class="feat-icon">📈</div>
-          <span>Track your improvement over time</span>
-        </div>
-      </div>
+  <div class="auth-wrapper">
+    <!-- BRAND HEADER OUTSIDE BOX -->
+    <div class="auth-header">
+      <div class="brand-mark">🎯</div>
+      <h1 class="auth-title">AI Interview</h1>
+      <p class="auth-subtitle">AI-Powered Technical &amp; Behavioral Simulation</p>
     </div>
 
-    <!-- RIGHT LOGIN PANEL -->
-    <div class="login-right">
-      <div class="login-form-wrap">
-        <h2>Welcome back 👋</h2>
-        <p class="subtitle">Sign in to continue your interview practice journey</p>
+    <!-- MAIN CENTER BOX: BLUE -->
+    <div class="auth-card">
+      <!-- NAVIGATION TABS -->
+      <nav class="auth-tabs" aria-label="Authentication Options">
+        <button type="button" class="auth-tab active" id="tab-login" onclick="toggleView('login')">Sign In</button>
+        <button type="button" class="auth-tab" id="tab-otp" onclick="toggleView('otp')">Mobile OTP</button>
+        <button type="button" class="auth-tab" id="tab-register" onclick="toggleView('register')">Register</button>
+      </nav>
 
-        <div class="demo-badge">
-          💡 <strong>Demo:</strong>&nbsp; Use any email &amp; password (min 4 chars)
-        </div>
-
+      <!-- 1. LOGIN VIEW -->
+      <div id="login-view">
         <div id="login-alert" style="display:none"></div>
 
-        <div class="form-group">
-          <label class="form-label" for="email">Email Address</label>
-          <div class="input-wrap">
-            <span class="input-icon">📧</span>
-            <input type="email" id="email" class="form-control" placeholder="you@example.com" value="harsh@example.com" autocomplete="email">
+        <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" autocomplete="on">
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="email">Email Address</label>
+              <span id="login-email-status" class="status-hint"></span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input 
+                type="email" 
+                id="email" 
+                name="email"
+                class="form-control" 
+                placeholder="name@example.com" 
+                autocomplete="username" 
+                spellcheck="false" 
+                autocorrect="off"
+                enterkeyhint="next"
+                required
+                oninput="onEmailInput(this, 'login-email-status')"
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input type="password" id="password" class="form-control" placeholder="Enter your password" value="demo1234" autocomplete="current-password">
-            <button class="pass-toggle" onclick="togglePass()" type="button" id="pass-toggle-btn" title="Toggle password">👁️</button>
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="password">Password</label>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                id="password" 
+                name="password"
+                class="form-control" 
+                placeholder="Enter your password" 
+                autocomplete="current-password"
+                enterkeyhint="go"
+                required
+              >
+              <button class="pass-toggle" onclick="togglePass('password')" type="button" id="pass-toggle-btn" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="remember-row">
-          <label>
-            <input type="checkbox" id="remember" checked> Remember me
-          </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
-        </div>
+          <div class="remember-row">
+            <label>
+              <input type="checkbox" id="remember" checked>
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-link" onclick="handleForgotPassword(event)">Forgot password?</a>
+          </div>
 
-        <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="handleLogin()">
-          Sign In →
-        </button>
+          <button class="btn-submit" id="login-btn" type="submit">
+            <span>Sign In</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
 
         <div class="divider">or continue with</div>
 
-        <button class="social-btn" onclick="handleLogin()">
-          <span style="font-size:18px">🔵</span> Continue with Google
+        <!-- Google Sign-In with Modal -->
+        <button class="social-btn" type="button" onclick="handleGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.25 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Continue with Google</span>
         </button>
 
-        <div class="signup-link">
-          Don't have an account?
-          <a onclick="handleLogin()">Create one free →</a>
+        <div class="demo-strip">
+          <span>Demo Account: harsh@example.com</span>
+          <button type="button" class="demo-pill" onclick="fillDemoCredentials()">Auto-Fill</button>
         </div>
+      </div>
+
+      <!-- 2. OTP VIEW -->
+      <div id="otp-view" style="display:none">
+        <div id="otp-alert" style="display:none"></div>
+
+        <form id="otp-form" onsubmit="event.preventDefault();" autocomplete="on">
+          <div class="form-group" id="phone-group">
+            <div class="form-header-row">
+              <label class="form-label" for="otp-phone">10-Digit Mobile Number</label>
+              <span id="otp-phone-status" class="status-hint">0/10 digits</span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+              </span>
+              <input 
+                type="tel" 
+                id="otp-phone" 
+                name="phone"
+                class="form-control" 
+                placeholder="e.g. 98765 43210" 
+                maxlength="14" 
+                autocomplete="tel"
+                inputmode="numeric"
+                enterkeyhint="go"
+                oninput="onPhoneInput(this, 'otp-phone-status')"
+              >
+            </div>
+          </div>
+
+          <div class="form-group" id="otp-group" style="display:none">
+            <div class="form-header-row">
+              <label class="form-label" for="otp-code">6-Digit Verification Code</label>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                id="otp-code" 
+                name="otp"
+                class="form-control" 
+                placeholder="123456" 
+                maxlength="6" 
+                inputmode="numeric"
+                enterkeyhint="done"
+              >
+            </div>
+          </div>
+
+          <button class="btn-submit" id="otp-request-btn" type="button" onclick="handleOTPRequest()">
+            <span>Send OTP to Mobile</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
+          <button class="btn-submit" id="otp-verify-btn" type="button" onclick="handleOTPVerify()" style="display:none; background: #22c55e; color: #ffffff;">
+            <span>Verify &amp; Sign In</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- 3. REGISTER VIEW -->
+      <div id="register-view" style="display:none">
+        <div id="register-alert" style="display:none"></div>
+
+        <form id="register-form" onsubmit="event.preventDefault(); handleRegister();" autocomplete="on">
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="reg-name">Full Name</label>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                id="reg-name" 
+                name="name"
+                class="form-control" 
+                placeholder="e.g. John Doe" 
+                autocomplete="name"
+                enterkeyhint="next"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="reg-phone">Phone Number <span style="color:#fca5a5">*</span></label>
+              <span id="reg-phone-status" class="status-hint">0/10 digits</span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+              </span>
+              <input 
+                type="tel" 
+                id="reg-phone" 
+                name="phone"
+                class="form-control" 
+                placeholder="e.g. 98765 43210" 
+                maxlength="14" 
+                autocomplete="tel"
+                inputmode="numeric"
+                enterkeyhint="next"
+                required
+                oninput="onPhoneInput(this, 'reg-phone-status')"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="reg-email">Email Address <span style="color:#fca5a5">*</span></label>
+              <span id="reg-email-status" class="status-hint"></span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input 
+                type="email" 
+                id="reg-email" 
+                name="email"
+                class="form-control" 
+                placeholder="name@example.com" 
+                autocomplete="email"
+                spellcheck="false" 
+                autocorrect="off"
+                enterkeyhint="next"
+                required
+                oninput="onEmailInput(this, 'reg-email-status')"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-header-row">
+              <label class="form-label" for="reg-password">Password <span style="color:#fca5a5">*</span></label>
+              <span id="reg-pass-strength" class="status-hint"></span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                id="reg-password" 
+                name="new-password"
+                class="form-control" 
+                placeholder="Minimum 4 characters" 
+                autocomplete="new-password"
+                enterkeyhint="go"
+                required
+                oninput="onPasswordInput(this, 'reg-pass-strength')"
+              >
+              <button class="pass-toggle" onclick="togglePass('reg-password')" type="button" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            <div class="pass-strength-bar">
+              <div id="reg-pass-bar" class="pass-strength-fill"></div>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="register-btn" type="submit">
+            <span>Create Account</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
+
+        <div class="divider">or continue with</div>
+
+        <button class="social-btn" type="button" onclick="handleGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.25 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
       </div>
     </div>
 
+    <!-- SECURITY TRUST FOOTER -->
+    <div class="auth-footer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span>256-bit SSL Encrypted • SQLite Secured</span>
+    </div>
   </div>
 
+  <!-- GOOGLE AUTH MODAL DIALOG -->
+  <dialog id="google-auth-dialog" class="auth-dialog" aria-labelledby="google-dialog-title">
+    <div class="dialog-header">
+      <h3 id="google-dialog-title" class="dialog-title">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.25 21.36 7.33 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </h3>
+      <button type="button" class="dialog-close" onclick="closeGoogleDialog()">&times;</button>
+    </div>
+    <div class="dialog-body">
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 16px;">Choose an account to continue to <strong>AI Interview Simulation</strong></p>
+
+      <button type="button" class="google-acc-item" onclick="loginWithSelectedGoogle('harsh@example.com')">
+        <div class="google-avatar">HV</div>
+        <div>
+          <div class="google-acc-name">Harsh Vardhan Singh</div>
+          <div class="google-acc-email">harsh@example.com</div>
+        </div>
+      </button>
+
+      <button type="button" class="google-acc-item" onclick="loginWithSelectedGoogle('candidate.ai@gmail.com')">
+        <div class="google-avatar" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;">AI</div>
+        <div>
+          <div class="google-acc-name">AI Candidate (Demo)</div>
+          <div class="google-acc-email">candidate.ai@gmail.com</div>
+        </div>
+      </button>
+
+      <div style="margin-top: 16px;">
+        <label class="form-label" for="custom-google-email" style="font-size: 12px; color: #475569;">Use another Google email:</label>
+        <div style="display: flex; gap: 8px; margin-top: 6px;">
+          <input type="email" id="custom-google-email" class="form-control" placeholder="you@gmail.com" style="flex: 1; padding: 10px; background: #f8fafc; border: 1.5px solid #cbd5e1; color: #0f172a;">
+          <button type="button" class="btn-submit" style="width: auto; padding: 10px 16px; background: #1e3a8a; color: white;" onclick="submitCustomGoogle()">Sign In</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- SMS OTP DELIVERY DIALOG -->
+  <dialog id="sms-notice-dialog" class="auth-dialog" aria-labelledby="sms-dialog-title">
+    <div class="dialog-header">
+      <h3 id="sms-dialog-title" class="dialog-title">
+        <span>📱 Mobile SMS Verification</span>
+      </h3>
+      <button type="button" class="dialog-close" onclick="closeSmsDialog()">&times;</button>
+    </div>
+    <div class="dialog-body">
+      <div id="sms-status-banner" style="font-size: 13px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 14px; line-height: 1.5;">
+        <strong>Why is the OTP on your screen?</strong><br>
+        Your Twilio SID &amp; Token are connected, but you have not yet claimed your free <strong>Twilio Phone Number</strong> in your Twilio Console. Without a sender number, Twilio cannot transmit SMS to physical SIM cards. The code below is generated so you can log in immediately:
+      </div>
+
+      <div class="otp-code-box">
+        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 6px;">Your 6-Digit One-Time Password</div>
+        <div class="otp-digits" id="modal-otp-display">------</div>
+        <div class="otp-note">Valid for 5 minutes. Enter this code to verify your phone.</div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn-submit" id="btn-autofill-otp" onclick="autoFillAndVerifyOTP()" style="flex: 1; background: #1e3a8a; color: #ffffff;">
+          <span>⚡ Auto-Fill &amp; Verify Now</span>
+        </button>
+        <button type="button" class="social-btn" onclick="copyModalOTP()" style="width: auto; padding: 0 16px; color: #0f172a; border-color: #cbd5e1; background: #f8fafc;">
+          <span>📋 Copy</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="js/questions.js"></script>
   <script src="js/utils.js"></script>
   <script>
-    // If already logged in, go to dashboard
+    // If already logged in, redirect to dashboard
     if (getUser()) window.location.href = 'dashboard.html';
 
-    function togglePass() {
-      const inp = document.getElementById('password');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
+    // Auto-fill remembered email if saved
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedEmail = localStorage.getItem('ai_remember_email');
+      if (savedEmail) {
+        const emailInput = document.getElementById('email');
+        if (emailInput) {
+          emailInput.value = savedEmail;
+          onEmailInput(emailInput, 'login-email-status');
+        }
+      }
+    });
+
+    let currentGeneratedOTP = '';
+
+    function fillDemoCredentials() {
+      const emailEl = document.getElementById('email');
+      const passEl = document.getElementById('password');
+      emailEl.value = 'harsh@example.com';
+      passEl.value = 'demo1234';
+      onEmailInput(emailEl, 'login-email-status');
     }
 
-    function handleLogin() {
-      const email = document.getElementById('email').value;
+    function toggleView(view) {
+      document.getElementById('login-view').style.display = view === 'login' ? 'block' : 'none';
+      document.getElementById('register-view').style.display = view === 'register' ? 'block' : 'none';
+      document.getElementById('otp-view').style.display = view === 'otp' ? 'block' : 'none';
+
+      const tabLogin = document.getElementById('tab-login');
+      const tabOtp = document.getElementById('tab-otp');
+      const tabRegister = document.getElementById('tab-register');
+      if (tabLogin) tabLogin.className = 'auth-tab' + (view === 'login' ? ' active' : '');
+      if (tabOtp) tabOtp.className = 'auth-tab' + (view === 'otp' ? ' active' : '');
+      if (tabRegister) tabRegister.className = 'auth-tab' + (view === 'register' ? ' active' : '');
+    }
+
+    function togglePass(inputId = 'password') {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      const isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+
+      const btn = inputId === 'password' ? document.getElementById('pass-toggle-btn') : event?.currentTarget;
+      if (btn) {
+        btn.innerHTML = isPass 
+          ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+          : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+    }
+
+    // --- REAL-TIME SENSING & VALIDATION HELPERS ---
+
+    function onPhoneInput(input, statusElId) {
+      let val = input.value.replace(/\D/g, '');
+      if (val.length === 12 && val.startsWith('91')) val = val.slice(2);
+      else if (val.length === 11 && val.startsWith('1')) val = val.slice(1);
+      if (val.length > 10) val = val.slice(0, 10);
+
+      if (val.length > 5) {
+        input.value = val.slice(0, 5) + ' ' + val.slice(5);
+      } else {
+        input.value = val;
+      }
+
+      const statusEl = document.getElementById(statusElId);
+      if (statusEl) {
+        if (val.length === 10) {
+          statusEl.textContent = '✓ 10 digits';
+          statusEl.style.color = '#86efac';
+          input.style.borderColor = '#22c55e';
+        } else if (val.length > 0) {
+          statusEl.textContent = `${val.length}/10 digits`;
+          statusEl.style.color = '#fde047';
+          input.style.borderColor = '#eab308';
+        } else {
+          statusEl.textContent = '0/10 digits';
+          statusEl.style.color = '#93c5fd';
+          input.style.borderColor = '';
+        }
+      }
+    }
+
+    function onEmailInput(input, statusElId) {
+      const val = input.value.trim();
+      const statusEl = document.getElementById(statusElId);
+      if (!statusEl) return;
+      if (!val) {
+        statusEl.textContent = '';
+        input.style.borderColor = '';
+        return;
+      }
+      const valid = isValidEmail(val);
+      if (valid) {
+        statusEl.textContent = '✓ Valid Email';
+        statusEl.style.color = '#86efac';
+        input.style.borderColor = '#22c55e';
+      } else {
+        statusEl.textContent = 'Invalid format';
+        statusEl.style.color = '#fca5a5';
+        input.style.borderColor = '#ef4444';
+      }
+    }
+
+    function onPasswordInput(input, statusElId) {
+      const val = input.value;
+      const statusEl = document.getElementById(statusElId);
+      const bar = document.getElementById('reg-pass-bar');
+      if (!statusEl || !bar) return;
+      if (!val) {
+        statusEl.textContent = '';
+        bar.style.width = '0%';
+        return;
+      }
+      let score = 0;
+      if (val.length >= 4) score += 25;
+      if (val.length >= 8) score += 25;
+      if (/[0-9]/.test(val) && /[a-zA-Z]/.test(val)) score += 25;
+      if (/[^a-zA-Z0-9]/.test(val)) score += 25;
+
+      if (score <= 25) {
+        statusEl.textContent = 'Weak';
+        statusEl.style.color = '#fca5a5';
+        bar.style.width = '25%';
+        bar.style.background = '#ef4444';
+      } else if (score <= 50) {
+        statusEl.textContent = 'Fair';
+        statusEl.style.color = '#fde047';
+        bar.style.width = '50%';
+        bar.style.background = '#eab308';
+      } else if (score <= 75) {
+        statusEl.textContent = 'Good';
+        statusEl.style.color = '#93c5fd';
+        bar.style.width = '75%';
+        bar.style.background = '#3b82f6';
+      } else {
+        statusEl.textContent = 'Strong ✓';
+        statusEl.style.color = '#86efac';
+        bar.style.width = '100%';
+        bar.style.background = '#22c55e';
+      }
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const remember = document.getElementById('remember').checked;
       const alertEl = document.getElementById('login-alert');
       const btn = document.getElementById('login-btn');
 
       alertEl.style.display = 'none';
+
+      if (!email || !password) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter both your email and password.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter a valid email address (e.g. name@example.com).';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
       btn.innerHTML = '<div class="spinner"></div> Signing in...';
       btn.disabled = true;
 
-      setTimeout(() => {
-        const result = doLogin(email, password);
+      try {
+        const result = await doLogin(email, password);
+        if (result.success) {
+          if (remember) {
+            localStorage.setItem('ai_remember_email', email);
+          } else {
+            localStorage.removeItem('ai_remember_email');
+          }
+          btn.innerHTML = '✓ Success! Redirecting...';
+          btn.style.background = '#16a34a';
+          btn.style.color = '#ffffff';
+          setTimeout(() => window.location.href = 'dashboard.html', 500);
+        } else {
+          alertEl.className = 'alert alert-error';
+          alertEl.innerHTML = '⚠️ ' + (result.error || 'Login failed. Please check credentials.');
+          alertEl.style.display = 'flex';
+          btn.innerHTML = '<span>Sign In</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+          btn.style.background = '#ffffff';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ ' + (err.message || 'Login error.');
+        alertEl.style.display = 'flex';
+        btn.innerHTML = '<span>Sign In</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+        btn.style.background = '#ffffff';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleRegister() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const alertEl = document.getElementById('register-alert');
+      const btn = document.getElementById('register-btn');
+
+      alertEl.style.display = 'none';
+
+      if (!name || !email || !phone || !password) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Full name, phone number, email, and password are required.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter a valid email address (e.g. name@example.com).';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      const cleanPhone = normalizePhoneNumber(phone);
+      if (!cleanPhone) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter a valid 10-digit mobile phone number.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      if (password.length < 4) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Password must be at least 4 characters long.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner"></div> Creating Account...';
+      btn.disabled = true;
+
+      try {
+        const result = await doRegister(name, email, cleanPhone, password);
+        if (result.success) {
+          btn.innerHTML = '✓ Account Created! Redirecting...';
+          btn.style.background = '#16a34a';
+          btn.style.color = '#ffffff';
+          setTimeout(() => window.location.href = 'dashboard.html', 500);
+        } else {
+          alertEl.className = 'alert alert-error';
+          alertEl.innerHTML = '⚠️ ' + (result.error || 'Registration failed.');
+          alertEl.style.display = 'flex';
+          btn.innerHTML = '<span>Create Account</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+          btn.style.background = '#ffffff';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ ' + (err.message || 'Registration error.');
+        alertEl.style.display = 'flex';
+        btn.innerHTML = '<span>Create Account</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+        btn.style.background = '#ffffff';
+        btn.disabled = false;
+      }
+    }
+
+    // --- OTP FLOW WITH EXPLANATION DIALOG ---
+
+    async function handleOTPRequest() {
+      const phone = document.getElementById('otp-phone').value.trim();
+      const alertEl = document.getElementById('otp-alert');
+      const btn = document.getElementById('otp-request-btn');
+
+      alertEl.style.display = 'none';
+      if (!phone) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter your 10-digit mobile number.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      const cleanPhone = normalizePhoneNumber(phone);
+      if (!cleanPhone) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter a valid 10-digit mobile number (e.g. 9876543210).';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner"></div> Sending...';
+      btn.disabled = true;
+
+      try {
+        const result = await requestOTP(cleanPhone);
+        if (result.success) {
+          currentGeneratedOTP = result.otp;
+          document.getElementById('modal-otp-display').textContent = result.otp;
+
+          const banner = document.getElementById('sms-status-banner');
+          if (result.gatewaySent) {
+            banner.style.background = '#f0fdf4';
+            banner.style.borderColor = '#bbf7d0';
+            banner.style.color = '#15803d';
+            banner.innerHTML = `<strong>✓ SMS Sent to SIM Card!</strong> Dispatched via ${result.gatewayProvider || 'Twilio'} to your mobile phone <strong>+91 ${cleanPhone}</strong>. Check your messages!`;
+          } else {
+            banner.style.background = '#eff6ff';
+            banner.style.borderColor = '#bfdbfe';
+            banner.style.color = '#1e40af';
+            banner.innerHTML = `<strong>Why is the OTP on your screen?</strong><br>Your Twilio SID &amp; Token are connected, but you have not yet claimed your free <strong>Twilio Phone Number</strong> in your Twilio Console. Without a sender number, Twilio cannot transmit SMS to physical SIM cards. The code below is generated so you can log in immediately:`;
+          }
+
+          document.getElementById('phone-group').style.display = 'none';
+          document.getElementById('otp-request-btn').style.display = 'none';
+          document.getElementById('otp-group').style.display = 'block';
+          document.getElementById('otp-verify-btn').style.display = 'flex';
+
+          // Open Native Dialog
+          const dlg = document.getElementById('sms-notice-dialog');
+          if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+        } else {
+          alertEl.className = 'alert alert-error';
+          alertEl.innerHTML = '⚠️ ' + (result.error || 'Failed to send OTP.');
+          alertEl.style.display = 'flex';
+          btn.innerHTML = '<span>Send OTP to Mobile</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ ' + e.message;
+        alertEl.style.display = 'flex';
+        btn.innerHTML = '<span>Send OTP to Mobile</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+        btn.disabled = false;
+      }
+    }
+
+    function closeSmsDialog() {
+      const dlg = document.getElementById('sms-notice-dialog');
+      if (dlg) dlg.close();
+    }
+
+    function autoFillAndVerifyOTP() {
+      if (currentGeneratedOTP) {
+        document.getElementById('otp-code').value = currentGeneratedOTP;
+      }
+      closeSmsDialog();
+      handleOTPVerify();
+    }
+
+    function copyModalOTP() {
+      if (currentGeneratedOTP) {
+        navigator.clipboard.writeText(currentGeneratedOTP);
+        alert('Copied OTP: ' + currentGeneratedOTP);
+      }
+    }
+
+    async function handleOTPVerify() {
+      const phone = document.getElementById('otp-phone').value.trim();
+      const otp = document.getElementById('otp-code').value.trim();
+      const alertEl = document.getElementById('otp-alert');
+      const btn = document.getElementById('otp-verify-btn');
+
+      alertEl.style.display = 'none';
+      if (!otp) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Please enter the 6-digit OTP code.';
+        alertEl.style.display = 'flex';
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner"></div> Verifying...';
+      btn.disabled = true;
+
+      try {
+        const result = await verifyOTP(phone, otp);
         if (result.success) {
           btn.innerHTML = '✓ Success! Redirecting...';
           btn.style.background = '#16a34a';
-          setTimeout(() => window.location.href = 'dashboard.html', 600);
+          setTimeout(() => window.location.href = 'dashboard.html', 500);
         } else {
           alertEl.className = 'alert alert-error';
-          alertEl.innerHTML = '⚠️ ' + result.error;
+          alertEl.innerHTML = '⚠️ ' + (result.error || 'Invalid OTP code.');
           alertEl.style.display = 'flex';
-          btn.innerHTML = 'Sign In →';
+          btn.innerHTML = '<span>Verify &amp; Sign In</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
           btn.disabled = false;
         }
-      }, 900);
+      } catch (e) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ ' + e.message;
+        alertEl.style.display = 'flex';
+        btn.innerHTML = '<span>Verify &amp; Sign In</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        btn.disabled = false;
+      }
     }
 
-    document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+    // --- GOOGLE AUTH FLOW WITH ACCESSIBLE MODAL ---
+
+    function handleGoogleLogin() {
+      const dlg = document.getElementById('google-auth-dialog');
+      if (dlg && typeof dlg.showModal === 'function') {
+        dlg.showModal();
+      } else {
+        const email = prompt("Google Sign-In:\nEnter your Google email to continue:", "harsh@example.com");
+        if (email) loginWithSelectedGoogle(email);
+      }
+    }
+
+    function closeGoogleDialog() {
+      const dlg = document.getElementById('google-auth-dialog');
+      if (dlg) dlg.close();
+    }
+
+    async function loginWithSelectedGoogle(email) {
+      closeGoogleDialog();
+      const alertEl = document.getElementById('login-alert');
+      alertEl.style.display = 'none';
+
+      try {
+        const result = await doGoogleLogin(email.trim());
+        if (result.success) {
+          window.location.href = 'dashboard.html';
+        } else {
+          alertEl.className = 'alert alert-error';
+          alertEl.innerHTML = '⚠️ ' + (result.error || 'Google sign-in failed.');
+          alertEl.style.display = 'flex';
+        }
+      } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.innerHTML = '⚠️ Google sign-in error: ' + err.message;
+        alertEl.style.display = 'flex';
+      }
+    }
+
+    function submitCustomGoogle() {
+      const inp = document.getElementById('custom-google-email');
+      const email = inp.value.trim();
+      if (!email || !isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      loginWithSelectedGoogle(email);
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const email = prompt("Enter your registered email address to reset password:");
+      if (!email || !email.trim()) return;
+      
+      const result = await doForgotPassword(email.trim());
+      if (result.success) {
+        const otp = result.otp || Math.floor(100000 + Math.random() * 900000).toString();
+        
+        alert(`MOCK EMAIL SENT to ${email}:\n\nYour Password Reset OTP is: ${otp}\n\n(Verification code for password reset)`);
+        
+        const userOtp = prompt("Enter the 6-digit OTP sent to your email:");
+        
+        if (userOtp === otp) {
+          const newPass = prompt(`OTP Verified!\n\nEnter a new password (min 4 chars):`);
+          if (newPass) {
+            const updateRes = await updatePassword(email.trim(), newPass);
+            if (updateRes.success) {
+              alert("Password updated successfully in database! You can now log in with your new password.");
+            } else {
+              alert("Error: " + updateRes.error);
+            }
+          }
+        } else if (userOtp) {
+          alert("Error: Incorrect OTP. Password reset failed.");
+        }
+      } else {
+        alert("Error: " + result.error);
+      }
+    }
   </script>
 </body>
 </html>

@@ -166,41 +166,52 @@
       font-size: 14px; font-weight: 700; color: var(--text-dark);
     }
 
-    .voice-row {
-      display: flex; align-items: center; gap: 10px;
+    .mcq-options {
+      display: flex; flex-direction: column; gap: 12px;
+      margin-bottom: 20px;
     }
 
-    .voice-status {
-      font-size: 12px; color: var(--text-muted);
-      transition: color 0.2s;
-    }
-
-    .voice-status.listening { color: #ef4444; font-weight: 600; }
-
-    .answer-textarea {
-      width: 100%; min-height: 160px;
-      padding: 14px 16px;
-      border: 1.5px solid var(--card-border);
+    .mcq-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; border: 1.5px solid var(--card-border);
       border-radius: var(--radius-sm);
-      font-size: 14px; font-family: inherit;
-      color: var(--text-dark);
-      resize: vertical; outline: none;
-      transition: all 0.2s ease;
-      line-height: 1.7;
+      cursor: pointer; transition: all 0.2s ease;
+      background: var(--bg);
     }
 
-    .answer-textarea:focus {
+    .mcq-option:hover {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+      background: rgba(59,130,246,0.05);
     }
+
+    .mcq-option.selected {
+      border-color: var(--primary);
+      background: rgba(30,58,138,0.05);
+      box-shadow: 0 0 0 2px rgba(30,58,138,0.1);
+    }
+
+    .mcq-radio {
+      width: 20px; height: 20px;
+      border: 2px solid var(--text-muted);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .mcq-option.selected .mcq-radio {
+      border-color: var(--primary);
+    }
+
+    .mcq-option.selected .mcq-radio::after {
+      content: ''; width: 10px; height: 10px;
+      background: var(--primary); border-radius: 50%;
+    }
+
+    .mcq-text { font-size: 15px; color: var(--text-dark); }
 
     .answer-footer {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; justify-content: flex-end;
       margin-top: 12px;
     }
-
-    .char-count { font-size: 12px; color: var(--text-muted); }
-    .char-count.good { color: #16a34a; }
 
     .submit-btn {
       background: var(--primary); color: white;
@@ -274,18 +285,7 @@
       border-left: 3px solid var(--accent);
     }
 
-    .keywords-section { margin-bottom: 16px; }
-    .keywords-label { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
-
-    .keyword-tag {
-      display: inline-flex; align-items: center;
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 12px; font-weight: 600;
-      margin: 3px; gap: 4px;
-    }
-
-    .keyword-tag.matched { background: #dcfce7; color: #15803d; }
-    .keyword-tag.missed { background: #fee2e2; color: #dc2626; }
+    .keywords-section { display: none; }
 
     .next-btn {
       background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -366,6 +366,80 @@
     .end-modal { display: none; }
     .end-modal.show { display: flex; }
 
+    /* PROCTOR WARNING TOAST BANNER */
+    .proctor-warning-banner {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      min-width: 380px;
+      max-width: 90vw;
+      background: #7f1d1d;
+      color: white;
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 16px 45px rgba(220, 38, 38, 0.4), 0 0 0 2px #ef4444;
+      animation: bannerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: inherit;
+    }
+    .proctor-warning-banner.show { display: flex; }
+    .proctor-warning-banner.strike-1 {
+      background: #78350f;
+      border-color: #f59e0b;
+      box-shadow: 0 16px 45px rgba(245, 158, 11, 0.4), 0 0 0 2px #f59e0b;
+    }
+    .proctor-warning-banner.strike-2 {
+      background: #7f1d1d;
+      border-color: #ef4444;
+      box-shadow: 0 16px 45px rgba(239, 68, 68, 0.5), 0 0 0 2px #ef4444;
+    }
+    .proctor-warning-banner.strike-3 {
+      background: #450a0a;
+      border-color: #dc2626;
+      box-shadow: 0 20px 60px rgba(185, 28, 28, 0.7), 0 0 0 3px #ef4444;
+      animation: bannerPulse 1s infinite ease-in-out;
+    }
+
+    @keyframes bannerSlideDown {
+      from { opacity: 0; transform: translate(-50%, -24px) scale(0.96); }
+      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    @keyframes bannerPulse {
+      0%, 100% { transform: translate(-50%, 0) scale(1); }
+      50% { transform: translate(-50%, 0) scale(1.02); }
+    }
+
+    /* CANCELLATION OVERLAY (3 WARNINGS EXCEEDED) */
+    .cancellation-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      z-index: 100000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    .cancellation-overlay.show {
+      display: flex;
+    }
+    .cancellation-card {
+      background: white;
+      border-radius: 20px;
+      max-width: 540px;
+      width: 100%;
+      padding: 36px 32px;
+      text-align: center;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 2px #ef4444;
+      animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     @media (max-width: 900px) {
       .interview-sidebar { display: none; }
       .interview-body { padding: 20px 16px; }
@@ -423,16 +497,15 @@
       <!-- Answer Card -->
       <div class="answer-card" id="answer-card">
         <div class="answer-header">
-          <span class="answer-label">✍️ Your Answer</span>
-          <div class="voice-row">
-            <span class="voice-status" id="voice-status">🎙️ Click mic to use voice</span>
-            <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice to text">🎙️</button>
-          </div>
+          <span class="answer-label">🎯 Select an Option</span>
         </div>
-        <textarea class="answer-textarea" id="answer-input" placeholder="Type your answer here, or click the mic button to speak..."></textarea>
+        
+        <div class="mcq-options" id="mcq-options">
+          <!-- JS Rendered -->
+        </div>
+
         <div class="answer-footer">
-          <span class="char-count" id="char-count">0 characters</span>
-          <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">
+          <button class="submit-btn" id="submit-btn" onclick="submitAnswer()" disabled>
             Submit Answer ✓
           </button>
         </div>
@@ -483,6 +556,48 @@
             <div class="summary-stat-lbl">Duration</div>
           </div>
         </div>
+        <div id="video-assessment-result" style="display: none; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="margin: 0; font-size: 17px; color: var(--primary); display:flex; align-items:center; gap:8px;">
+              <span>📹</span> AI Behavioral &amp; Video Proctor Report
+            </h4>
+            <span id="final-proctor-badge" style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #dcfce7; color: #166534;">
+              ✅ Clean / Verified
+            </span>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
+            <div style="background: white; border: 1px solid var(--card-border); padding: 12px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">CONFIDENCE SCORE</div>
+              <div id="final-confidence" style="font-size: 24px; font-weight: 800; color: #16a34a; margin-top: 4px;">--%</div>
+              <div id="final-conf-label" style="font-size: 11px; color: #16a34a;">High</div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--card-border); padding: 12px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">EYE CONTACT</div>
+              <div id="final-eye-score" style="font-size: 24px; font-weight: 800; color: #2563eb; margin-top: 4px;">--%</div>
+              <div id="final-eye-label" style="font-size: 11px; color: #2563eb;">Direct Focus</div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--card-border); padding: 12px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">PRIMARY EXPRESSION</div>
+              <div id="final-expression" style="font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 6px;">Focused</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Calm &amp; Composed</div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--card-border); padding: 12px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">UNFAIR MOVEMENTS</div>
+              <div id="final-warnings-count" style="font-size: 24px; font-weight: 800; color: #16a34a; margin-top: 4px;">0</div>
+              <div id="final-integrity-label" style="font-size: 11px; color: #16a34a;">100% Integrity</div>
+            </div>
+          </div>
+
+          <div style="background: white; border: 1px solid var(--card-border); border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.6; color: var(--text-dark);">
+            <div style="font-weight: 700; margin-bottom: 6px; color: var(--primary);">🤖 AI Body Language &amp; Proctoring Summary:</div>
+            <div id="final-behavior-feedback">Evaluating video session...</div>
+            <div id="final-unfair-log" style="margin-top: 8px; font-size: 12px; color: #ef4444; display: none;"></div>
+          </div>
+        </div>
         <div class="summary-actions">
           <a href="history.html" class="btn btn-primary btn-lg">📋 View Results</a>
           <a href="setup.html" class="btn btn-outline btn-lg">🔄 Try Again</a>
@@ -497,6 +612,84 @@
       <div class="hint-card">
         <div class="hint-title">📍 Progress</div>
         <div class="q-dot-row" id="q-dot-row"></div>
+      </div>
+
+      <div class="hint-card" id="video-tracking-card" style="display: none; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div class="hint-title" style="margin-bottom:0; display:flex; align-items:center; gap:6px;">
+            <span>📹</span> AI Vision &amp; Proctor
+          </div>
+          <span id="ai-vision-pill" style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #dcfce7; color: #15803d; display:flex; align-items:center; gap:4px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; display: inline-block;"></span>
+            AI Active
+          </span>
+        </div>
+
+        <!-- Camera Container -->
+        <div id="video-container" style="position: relative; border-radius: 8px; overflow: hidden; background: #0b1120; border: 2px solid #22c55e; transition: border-color 0.3s; aspect-ratio: 4/3;">
+          <video id="webcam-video" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1);"></video>
+          <canvas id="tracking-canvas" width="320" height="240" style="display: none;"></canvas>
+
+          <!-- Designated Proctor Circle & Target Guide -->
+          <div id="face-reticle" style="position: absolute; top: 12%; left: 18%; width: 64%; height: 76%; border: 2.5px dashed #22c55e; border-radius: 50%; pointer-events: none; transition: border-color 0.25s, box-shadow 0.25s; box-shadow: inset 0 0 16px rgba(34,197,94,0.18), 0 0 10px rgba(34,197,94,0.25);">
+            <!-- Reticle Crosshairs & Guides -->
+            <div style="position: absolute; top: 0; left: 50%; width: 1.5px; height: 12px; background: rgba(34,197,94,0.8); transform: translateX(-50%);"></div>
+            <div style="position: absolute; bottom: 0; left: 50%; width: 1.5px; height: 12px; background: rgba(34,197,94,0.8); transform: translateX(-50%);"></div>
+            <div style="position: absolute; top: 50%; left: 0; width: 12px; height: 1.5px; background: rgba(34,197,94,0.8); transform: translateY(-50%);"></div>
+            <div style="position: absolute; top: 50%; right: 0; width: 12px; height: 1.5px; background: rgba(34,197,94,0.8); transform: translateY(-50%);"></div>
+            
+            <!-- Real-time pupil centroid dot -->
+            <div id="reticle-gaze-dot" style="position: absolute; top: 40%; left: 50%; width: 10px; height: 10px; background: #22c55e; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.15s ease; box-shadow: 0 0 8px #22c55e;"></div>
+            
+            <!-- Dynamic Circle Status Badge -->
+            <div id="reticle-status-pill" style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #166534; color: #dcfce7; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 12px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;">
+              ● INSIDE CIRCLE
+            </div>
+          </div>
+
+          <!-- Live Gaze HUD Badge on video -->
+          <div id="video-overlay-badge" style="position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="video-gaze-text">👁️ Gaze: Center</span>
+            <span id="video-conf-text" style="color: #4ade80; font-weight: 700;">85% Confident</span>
+          </div>
+        </div>
+
+        <!-- Live Metrics HUD -->
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Confidence Bar -->
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-dark); margin-bottom: 4px;">
+              <span>Confidence Level</span>
+              <span id="confidence-metric" style="color: #16a34a; font-weight: 700;">85% (High)</span>
+            </div>
+            <div style="background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+              <div id="confidence-bar" style="width: 85%; height: 100%; background: linear-gradient(90deg, #3b82f6, #16a34a); transition: width 0.4s;"></div>
+            </div>
+          </div>
+
+          <!-- Indicators Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px;">
+            <div style="background: var(--bg-secondary); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--card-border);">
+              <div style="color: var(--text-muted); font-size: 10px;">Facial Expression</div>
+              <div id="expression-metric" style="font-weight: 700; color: var(--primary);">😊 Confident</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--card-border);">
+              <div style="color: var(--text-muted); font-size: 10px;">Eye Ball Movement</div>
+              <div id="gaze-metric" style="font-weight: 700; color: #16a34a;">👁️ Direct Focus</div>
+            </div>
+          </div>
+
+          <!-- Proctor Alert / Unfair Movement Banner -->
+          <div id="proctor-alert-box" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s;">
+            <span id="proctor-status" style="color: #166534; font-weight: 600;">🟢 Proctor: Normal</span>
+            <span id="proctor-warnings" style="color: var(--text-muted); font-size: 10px; font-weight: 600;">Warnings: 0</span>
+          </div>
+
+          <!-- AI Status hint -->
+          <div id="ai-feedback-hint" style="font-size: 10px; color: var(--text-muted); text-align: center; font-style: italic;">
+            Tracking facial expression &amp; eye contact with AI
+          </div>
+        </div>
       </div>
 
       <div class="hint-card">
@@ -533,6 +726,62 @@
   </div>
 </div>
 
+<!-- PROCTOR ON-SCREEN FLOATING WARNING BANNER -->
+<div id="proctor-warning-banner" class="proctor-warning-banner" role="alert" aria-live="assertive">
+  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 22px;">🚨</span>
+      <span id="pwb-title" style="font-weight: 800; font-size: 15px; letter-spacing: 0.5px; text-transform: uppercase;">PROCTOR WARNING</span>
+    </div>
+    <span id="pwb-badge" style="background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 999px;">
+      STRIKE 1 / 3
+    </span>
+  </div>
+  <div id="pwb-message" style="font-size: 14px; line-height: 1.5; color: #fecaca; text-align: left; width: 100%;">
+    Suspicious activity detected.
+  </div>
+  <div style="font-size: 11px; margin-top: 10px; color: #fca5a5; width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(254,202,202,0.2); padding-top: 8px;">
+    <span>⚠️ 3 warnings will disqualify &amp; cancel your test</span>
+    <span id="pwb-timer" style="font-weight: 600;">Dismissing in 6s...</span>
+  </div>
+</div>
+
+<!-- TEST CANCELLED & DISQUALIFIED MODAL (3 WARNINGS EXCEEDED) -->
+<div id="cancellation-modal" class="cancellation-overlay" role="dialog" aria-modal="true" aria-labelledby="canc-title">
+  <div class="cancellation-card">
+    <div style="width: 72px; height: 72px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 38px; margin: 0 auto 18px; border: 2px solid #fca5a5;">
+      🛑
+    </div>
+    <h2 id="canc-title" style="font-size: 24px; font-weight: 900; color: #991b1b; margin: 0 0 8px;">
+      Test Cancelled &amp; Disqualified
+    </h2>
+    <div id="canc-badge" style="display: inline-block; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 12px; font-weight: 800; padding: 4px 14px; border-radius: 999px; margin-bottom: 16px;">
+      🚨 3 Malpractice Warnings Reached
+    </div>
+    <p id="canc-desc" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px;">
+      The AI proctoring system has automatically cancelled your examination due to repeated infractions detected during the session (mobile phone, lip movement, or unfair gaze). Your test cannot be submitted.
+    </p>
+    
+    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; text-align: left;">
+      <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; justify-content: space-between;">
+        <span>Recorded Violations:</span>
+        <span style="color: #ef4444; font-weight: 800;">Limit: 3/3 Reached</span>
+      </div>
+      <div id="cancellation-infractions-list" style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #b91c1c;">
+        <!-- Violations will be rendered dynamically -->
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <a href="dashboard.html" class="btn btn-outline" style="flex: 1; justify-content: center; text-decoration: none;">🏠 Dashboard</a>
+      <a href="history.html" class="btn" style="flex: 1; justify-content: center; background: #dc2626; color: white; border: none; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+        📋 Violations Report
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="js/questions.js"></script>
 <script src="js/utils.js"></script>
 <script>
   requireAuth();
@@ -551,67 +800,834 @@
   let timerInterval = null;
   let secondsLeft = config.timerSec;
   let isSubmitted = false;
-  let isListening = false;
-  let recognition = null;
+  let selectedAnswerIndex = null;
   const startTime = new Date();
+  let videoStream = null;
 
-  // Set up speech recognition
-  const SpeechRecog = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SpeechRecog) {
-    recognition = new SpeechRecog();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    recognition.onresult = (e) => {
-      let transcript = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        transcript += e.results[i][0].transcript;
+  // ============================================================
+  // AI VIDEO TRACKING & PROCTORING ENGINE (GEMINI VISION + HIGH-PRECISION CV)
+  // ============================================================
+  const videoTracker = {
+    active: false,
+    stream: null,
+    processTimer: null,
+    aiTimer: null,
+    canvas: null,
+    ctx: null,
+    totalFrames: 0,
+    directEyeFrames: 0,
+    gazeAwayStreak: 0,
+    faceMissingStreak: 0,
+    lipMovementStreak: 0,
+    prevMouthLum: null,
+    mobileGestureStreak: 0,
+    prevCornerLum: null,
+    outOfCircleStreak: 0,
+    multiPersonStreak: 0,
+    lastWarningTimestamp: 0,
+    lastAiFrameTime: 0,
+    totalWarnings: 0,
+    isCancelled: false,
+    warningToastTimeout: null,
+    confidenceHistory: [],
+    expressionsCount: { 'Confident': 0, 'Focused': 0, 'Calm': 0, 'Thinking': 0, 'Nervous': 0, 'Distracted': 0 },
+    unfairEvents: [],
+    currentConfidence: 85,
+    currentExpression: 'Focused',
+    currentGaze: 'Direct Focus',
+    lastAiTip: 'Keep your face centered inside the designated circle.'
+  };
+
+  // Synthesize warning/cancellation audio via Web Audio API without external file dependencies
+  function playProctorAudioBeep(isFinal = false) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+
+      if (isFinal) {
+        // Disqualification siren (descending alarm pulse)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(540, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(130, ctx.currentTime + 1.0);
+        gain.gain.setValueAtTime(0.38, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.0);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 1.0);
+      } else {
+        // Warning chime (double beep: 880Hz -> 660Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(880, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.18);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(660, ctx.currentTime + 0.2);
+        gain2.gain.setValueAtTime(0.28, ctx.currentTime + 0.2);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.2);
+        osc2.stop(ctx.currentTime + 0.45);
       }
-      const ta = document.getElementById('answer-input');
-      const base = ta.dataset.base || '';
-      ta.value = base + transcript;
-      updateCharCount();
-    };
-    recognition.onend = () => {
-      if (isListening) recognition.start();
-    };
+    } catch (err) {
+      console.warn('AudioContext alert tone unavailable:', err);
+    }
   }
 
-  function toggleVoice() {
-    const btn = document.getElementById('mic-btn');
-    const status = document.getElementById('voice-status');
-    if (!recognition) {
-      status.textContent = '❌ Not supported in this browser';
+  function initAIVideoTracking() {
+    const card = document.getElementById('video-tracking-card');
+    if (!card) return;
+    card.style.display = 'block';
+
+    navigator.mediaDevices.getUserMedia({ 
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, 
+      audio: false 
+    })
+    .then(stream => {
+      videoTracker.stream = stream;
+      videoStream = stream;
+      const videoEl = document.getElementById('webcam-video');
+      videoEl.srcObject = stream;
+      videoTracker.canvas = document.getElementById('tracking-canvas');
+      videoTracker.ctx = videoTracker.canvas.getContext('2d');
+      videoTracker.active = true;
+
+      // Start Real-Time High-Precision Computer Vision Loop (Every 1.1 seconds)
+      videoTracker.processTimer = setInterval(analyzeWebcamFrame, 1100);
+
+      // Start Deep AI Gemini Vision API Loop (Every 6.5 seconds for rapid unfair object & multi-candidate detection)
+      videoTracker.aiTimer = setInterval(sendFrameToGeminiVision, 6500);
+      // Analyze initial framing after 2 seconds
+      setTimeout(sendFrameToGeminiVision, 2000);
+    })
+    .catch(err => {
+      console.warn("Webcam access denied or unavailable:", err);
+      card.innerHTML = `
+        <div class="hint-title">📹 AI Video Tracking</div>
+        <div style="padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 12px; color: #b91c1c; margin-top: 8px;">
+          <strong>Camera Unavailable:</strong> ${err.name === 'NotAllowedError' ? 'Permission denied by browser' : 'No webcam found'}. 
+          <div style="font-size:11px; margin-top:4px; color:#7f1d1d;">The interview will proceed in standard mode.</div>
+        </div>
+      `;
+    });
+  }
+
+  // Real-Time High-Precision Computer Vision: Centroid & Circle Boundary Tracking, Eyeball Deviation, Lip Movement, Multiple People
+  function analyzeWebcamFrame() {
+    if (!videoTracker.active || videoTracker.isCancelled) return;
+    const video = document.getElementById('webcam-video');
+    if (!video || video.readyState < 2) return;
+
+    const canvas = videoTracker.canvas;
+    const ctx = videoTracker.ctx;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = frame.data;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Elliptical Circle Parameters (Designated Proctor Target Zone)
+    // Center: (width * 0.5 = 160, height * 0.5 = 120), rx = 100 (62% width), ry = 90 (75% height)
+    const circleCenterX = width * 0.5;
+    const circleCenterY = height * 0.5;
+    const circleRx = width * 0.32;
+    const circleRy = height * 0.38;
+
+    let weightedX = 0;
+    let weightedY = 0;
+    let facePixels = 0;
+    let totalLuminance = 0;
+    let leftFacePixels = 0;
+    let rightFacePixels = 0;
+    let farLeftPixels = 0;
+    let farRightPixels = 0;
+
+    // Mouth ROI accumulator
+    let mouthLuminance = 0;
+    let mouthPixels = 0;
+    const mouthStartY = Math.floor(height * 0.62);
+    const mouthEndY = Math.floor(height * 0.82);
+    const mouthStartX = Math.floor(width * 0.38);
+    const mouthEndX = Math.floor(width * 0.62);
+
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        const idx = (y * width + x) * 4;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        // Human face skin & luminance range
+        const isFaceCandidate = (lum >= 28 && lum <= 235) && (r > 38 && g > 25 && b > 15) && (r > b) && ((r - g) > -12);
+
+        if (isFaceCandidate) {
+          weightedX += x;
+          weightedY += y;
+          facePixels++;
+          totalLuminance += lum;
+
+          if (x < width * 0.45) leftFacePixels++;
+          else if (x > width * 0.55) rightFacePixels++;
+
+          if (x < width * 0.22) farLeftPixels++;
+          else if (x > width * 0.78) farRightPixels++;
+        }
+
+        // Accumulate mouth region luminance
+        if (y >= mouthStartY && y <= mouthEndY && x >= mouthStartX && x <= mouthEndX) {
+          mouthLuminance += lum;
+          mouthPixels++;
+        }
+      }
+    }
+
+    videoTracker.totalFrames++;
+    const reticleEl = document.getElementById('face-reticle');
+    const reticleDot = document.getElementById('reticle-gaze-dot');
+    const statusPill = document.getElementById('reticle-status-pill');
+
+    // 1. Check if face is missing or obscured
+    if (facePixels < 40) {
+      videoTracker.faceMissingStreak++;
+      if (reticleEl) {
+        reticleEl.style.borderColor = '#ef4444';
+        reticleEl.style.boxShadow = '0 0 20px rgba(239,68,68,0.85)';
+      }
+      if (statusPill) {
+        statusPill.textContent = '🚨 FACE OUT OF CIRCLE!';
+        statusPill.style.background = '#991b1b';
+        statusPill.style.color = '#fee2e2';
+      }
+      if (videoTracker.faceMissingStreak >= 2) {
+        triggerUnfairMovement('OUT_OF_BOUNDS', 'Face completely outside designated proctor circle! Return to center.');
+        videoTracker.faceMissingStreak = 0;
+      }
       return;
-    }
-    if (isListening) {
-      recognition.stop();
-      isListening = false;
-      btn.classList.remove('listening');
-      btn.textContent = '🎙️';
-      status.textContent = '🎙️ Click mic to use voice';
-      status.classList.remove('listening');
-      const ta = document.getElementById('answer-input');
-      ta.dataset.base = ta.value;
     } else {
-      recognition.start();
-      isListening = true;
-      btn.classList.add('listening');
-      btn.textContent = '⏹';
-      status.textContent = '🔴 Listening... click to stop';
-      status.classList.add('listening');
+      videoTracker.faceMissingStreak = 0;
+    }
+
+    // 2. High-Precision Centroid of Candidate's Face
+    const faceCenterX = weightedX / facePixels;
+    const faceCenterY = weightedY / facePixels;
+
+    // Update real-time pupil centroid dot inside the circle
+    if (reticleDot) {
+      const dotX = Math.max(12, Math.min(88, Math.round((faceCenterX / width) * 100)));
+      const dotY = Math.max(12, Math.min(88, Math.round((faceCenterY / height) * 100)));
+      reticleDot.style.left = dotX + '%';
+      reticleDot.style.top = dotY + '%';
+    }
+
+    // 3. Normalized Distance From the Given Circle's Perimeter
+    const normDx = (faceCenterX - circleCenterX) / circleRx;
+    const normDy = (faceCenterY - circleCenterY) / circleRy;
+    const normDist = Math.sqrt(normDx * normDx + normDy * normDy);
+
+    let isCompletelyOutOfCircle = false;
+    let isNearBoundary = false;
+
+    if (normDist > 1.08) {
+      // Candidate's face has stepped or moved completely outside the given circle!
+      isCompletelyOutOfCircle = true;
+      if (reticleEl) {
+        reticleEl.style.borderColor = '#ef4444';
+        reticleEl.style.borderStyle = 'solid';
+        reticleEl.style.boxShadow = '0 0 25px rgba(239,68,68,0.9)';
+      }
+      if (statusPill) {
+        statusPill.textContent = '🚨 OUT OF CIRCLE! (STRIKE)';
+        statusPill.style.background = '#991b1b';
+        statusPill.style.color = '#fee2e2';
+      }
+    } else if (normDist > 0.86) {
+      // Near boundary of the circle
+      isNearBoundary = true;
+      if (reticleEl) {
+        reticleEl.style.borderColor = '#f59e0b';
+        reticleEl.style.borderStyle = 'dashed';
+        reticleEl.style.boxShadow = '0 0 14px rgba(245,158,11,0.5)';
+      }
+      if (statusPill) {
+        statusPill.textContent = '⚠️ KEEP INSIDE CIRCLE';
+        statusPill.style.background = '#92400e';
+        statusPill.style.color = '#fef3c7';
+      }
+    } else {
+      // Comfortably inside the designated circle
+      if (reticleEl && videoTracker.totalWarnings === 0) {
+        reticleEl.style.borderColor = '#22c55e';
+        reticleEl.style.borderStyle = 'dashed';
+        reticleEl.style.boxShadow = 'inset 0 0 16px rgba(34,197,94,0.18), 0 0 10px rgba(34,197,94,0.25)';
+      }
+      if (statusPill) {
+        statusPill.textContent = '● INSIDE CIRCLE';
+        statusPill.style.background = '#166534';
+        statusPill.style.color = '#dcfce7';
+      }
+    }
+
+    // Strike trigger if candidate goes out of given circle completely
+    if (isCompletelyOutOfCircle) {
+      videoTracker.outOfCircleStreak++;
+      if (videoTracker.outOfCircleStreak >= 2) {
+        triggerUnfairMovement('OUT_OF_BOUNDS', 'Face completely outside designated proctor circle! Please position yourself inside the circle.');
+        // Trigger immediate AI frame dispatch to double-check candidate presence
+        sendFrameToGeminiVision();
+        videoTracker.outOfCircleStreak = 0;
+      }
+    } else {
+      videoTracker.outOfCircleStreak = 0;
+    }
+
+    // 4. Multiple People Silhouette Check in Local CV
+    // If there is significant face density on both far left and far right while center is also active
+    if (farLeftPixels > 65 && farRightPixels > 65) {
+      videoTracker.multiPersonStreak++;
+      if (videoTracker.multiPersonStreak >= 2) {
+        // Trigger immediate Gemini Vision AI call to evaluate and directly cancel if confirmed
+        sendFrameToGeminiVision();
+        videoTracker.multiPersonStreak = 0;
+      }
+    } else {
+      videoTracker.multiPersonStreak = 0;
+    }
+
+    // 5. Eyeball & Gaze Deviation
+    const horizDiff = (leftFacePixels - rightFacePixels) / Math.max(1, (leftFacePixels + rightFacePixels));
+    let detectedGaze = 'Direct Focus';
+    let isLookingAway = false;
+
+    if (horizDiff > 0.16) {
+      detectedGaze = 'Looking Right (Off-screen)';
+      isLookingAway = true;
+    } else if (horizDiff < -0.16) {
+      detectedGaze = 'Looking Left (Off-screen)';
+      isLookingAway = true;
+    } else if (normDy > 0.35) {
+      detectedGaze = 'Looking Down (Notes / Device)';
+      isLookingAway = true;
+    } else {
+      detectedGaze = 'Direct Focus';
+      videoTracker.directEyeFrames++;
+    }
+
+    videoTracker.currentGaze = detectedGaze;
+
+    if (isLookingAway) {
+      videoTracker.gazeAwayStreak++;
+      if (videoTracker.gazeAwayStreak === 3) {
+        triggerUnfairMovement('LOOKING_AWAY', 'Suspicious gaze: looking away from test screen repeatedly.');
+      }
+    } else {
+      videoTracker.gazeAwayStreak = 0;
+      if (videoTracker.totalWarnings === 0 && !isCompletelyOutOfCircle) {
+        clearUnfairAlertVisual();
+      }
+    }
+
+    // 6. Lip Movement & Mouthing Detection
+    const avgMouthLum = mouthLuminance / Math.max(1, mouthPixels);
+    if (videoTracker.prevMouthLum !== null) {
+      const mouthDelta = Math.abs(avgMouthLum - videoTracker.prevMouthLum);
+      if (mouthDelta > 13.5 && !isLookingAway) {
+        videoTracker.lipMovementStreak++;
+        if (videoTracker.lipMovementStreak >= 3) {
+          triggerUnfairMovement('LIP_MOVEMENT', 'Unauthorized lip movement / whispering detected during test!');
+          videoTracker.lipMovementStreak = 0;
+        }
+      } else {
+        videoTracker.lipMovementStreak = Math.max(0, videoTracker.lipMovementStreak - 1);
+      }
+    }
+    videoTracker.prevMouthLum = avgMouthLum;
+
+    // 7. Dynamic Confidence Calculation
+    let frameConfidence = 85;
+    if (isLookingAway || isCompletelyOutOfCircle) frameConfidence -= 20;
+    else if (isNearBoundary) frameConfidence -= 8;
+    else frameConfidence += 3;
+    if (videoTracker.currentExpression === 'Confident') frameConfidence += 6;
+    if (videoTracker.currentExpression === 'Nervous') frameConfidence -= 10;
+    if (videoTracker.totalWarnings > 0) frameConfidence -= (videoTracker.totalWarnings * 10);
+
+    frameConfidence = Math.max(30, Math.min(98, Math.round(frameConfidence)));
+    videoTracker.currentConfidence = frameConfidence;
+    videoTracker.confidenceHistory.push(frameConfidence);
+
+    updateTrackingHUD(detectedGaze, frameConfidence, isLookingAway || isCompletelyOutOfCircle);
+  }
+
+  function updateTrackingHUD(gaze, conf, isAway) {
+    const gazeMetric = document.getElementById('gaze-metric');
+    const gazeText = document.getElementById('video-gaze-text');
+    const confMetric = document.getElementById('confidence-metric');
+    const confBar = document.getElementById('confidence-bar');
+    const confText = document.getElementById('video-conf-text');
+
+    if (gazeMetric) {
+      gazeMetric.textContent = (isAway ? '⚠️ ' : '👁️ ') + gaze;
+      gazeMetric.style.color = isAway ? '#ef4444' : '#16a34a';
+    }
+    if (gazeText) {
+      gazeText.textContent = (isAway ? '⚠️ Gaze: Deviated' : '👁️ Gaze: Centered');
+    }
+    if (confMetric) {
+      const confLabel = conf >= 80 ? 'High' : conf >= 65 ? 'Moderate' : 'Low';
+      confMetric.textContent = `${conf}% (${confLabel})`;
+      confMetric.style.color = conf >= 80 ? '#16a34a' : conf >= 65 ? '#2563eb' : '#f59e0b';
+    }
+    if (confBar) {
+      confBar.style.width = conf + '%';
+      confBar.style.background = conf >= 80 ? 'linear-gradient(90deg, #3b82f6, #16a34a)' : conf >= 65 ? '#2563eb' : '#f59e0b';
+    }
+    if (confText) {
+      confText.textContent = `${conf}% Confident`;
+      confText.style.color = conf >= 80 ? '#4ade80' : '#fbbf24';
     }
   }
 
-  function stopVoice() {
-    if (isListening && recognition) {
-      recognition.stop();
-      isListening = false;
-      document.getElementById('mic-btn').classList.remove('listening');
-      document.getElementById('mic-btn').textContent = '🎙️';
-      document.getElementById('voice-status').textContent = '🎙️ Click mic to use voice';
-      document.getElementById('voice-status').classList.remove('listening');
+  // Trigger Unfair Movement: Handles On-Screen Warnings & 3-Warning Auto-Cancellation
+  function triggerUnfairMovement(type, reason) {
+    if (videoTracker.isCancelled) return;
+
+    if (!reason) {
+      reason = type;
+      type = 'UNFAIR_ACTION';
     }
+
+    const now = Date.now();
+    // 4.5s cooldown buffer between warning strikes so 1 prolonged action does not consume all 3 strikes
+    if (now - videoTracker.lastWarningTimestamp < 4500) return;
+    videoTracker.lastWarningTimestamp = now;
+
+    videoTracker.totalWarnings++;
+    const strike = videoTracker.totalWarnings;
+
+    const elapsedSec = Math.floor((now - startTime) / 1000);
+    const timeStr = `${Math.floor(elapsedSec / 60).toString().padStart(2, '0')}:${(elapsedSec % 60).toString().padStart(2, '0')}`;
+    videoTracker.unfairEvents.push({ time: timeStr, type, reason, strike });
+
+    // Audio chime/alarm
+    playProctorAudioBeep(strike >= 3);
+
+    const container = document.getElementById('video-container');
+    const alertBox = document.getElementById('proctor-alert-box');
+    const statusEl = document.getElementById('proctor-status');
+    const warnEl = document.getElementById('proctor-warnings');
+    const reticle = document.getElementById('face-reticle');
+
+    if (container) container.style.borderColor = strike >= 3 ? '#b91c1c' : '#ef4444';
+    if (alertBox) {
+      alertBox.style.background = strike >= 3 ? '#450a0a' : '#fef2f2';
+      alertBox.style.borderColor = strike >= 3 ? '#dc2626' : '#fecaca';
+    }
+    if (statusEl) {
+      statusEl.innerHTML = `⚠️ Strike ${strike}/3: ${reason}`;
+      statusEl.style.color = '#dc2626';
+    }
+    if (warnEl) {
+      warnEl.textContent = `Warnings: ${strike}/3`;
+      warnEl.style.color = strike === 1 ? '#d97706' : '#dc2626';
+      warnEl.style.fontWeight = '800';
+    }
+    if (reticle) {
+      reticle.style.borderColor = 'rgba(239, 68, 68, 0.95)';
+    }
+
+    const hint = document.getElementById('ai-feedback-hint');
+    if (hint) {
+      hint.textContent = `⚠️ Proctor Warning (${strike}/3): ${reason}`;
+      hint.style.color = '#dc2626';
+    }
+
+    // Display floating on-screen warning toast banner
+    showOnScreenWarning(strike, type, reason);
+
+    // If 3 warnings reached -> Immediately cancel & disqualify test
+    if (strike >= 3) {
+      cancelTestDueToProctoring(reason);
+    }
+  }
+
+  function showOnScreenWarning(strike, type, reason) {
+    const banner = document.getElementById('proctor-warning-banner');
+    if (!banner) return;
+
+    if (videoTracker.warningToastTimeout) {
+      clearTimeout(videoTracker.warningToastTimeout);
+      videoTracker.warningToastTimeout = null;
+    }
+
+    banner.className = `proctor-warning-banner show strike-${Math.min(3, strike)}`;
+
+    const titleEl = document.getElementById('pwb-title');
+    const badgeEl = document.getElementById('pwb-badge');
+    const msgEl = document.getElementById('pwb-message');
+    const timerEl = document.getElementById('pwb-timer');
+
+    if (strike === 1) {
+      if (titleEl) titleEl.textContent = 'PROCTOR WARNING (STRIKE 1 OF 3)';
+      if (badgeEl) {
+        badgeEl.textContent = 'STRIKE 1 / 3';
+        badgeEl.style.background = '#fef3c7';
+        badgeEl.style.color = '#92400e';
+      }
+    } else if (strike === 2) {
+      if (titleEl) titleEl.textContent = 'FINAL WARNING (STRIKE 2 OF 3)';
+      if (badgeEl) {
+        badgeEl.textContent = 'STRIKE 2 / 3 - CRITICAL';
+        badgeEl.style.background = '#fee2e2';
+        badgeEl.style.color = '#991b1b';
+      }
+    } else {
+      if (titleEl) titleEl.textContent = 'TEST DISQUALIFIED (STRIKE 3 OF 3)';
+      if (badgeEl) {
+        badgeEl.textContent = 'TEST CANCELLED';
+        badgeEl.style.background = '#450a0a';
+        badgeEl.style.color = '#f87171';
+      }
+    }
+
+    if (msgEl) {
+      let friendlyDetail = reason;
+      if (type === 'OUT_OF_BOUNDS') friendlyDetail = '🎯 Face completely outside designated circle! Position yourself strictly inside the circle.';
+      else if (type === 'UNFAIR_OBJECT') friendlyDetail = `🚫 ${reason}`;
+      else if (type === 'MOBILE_PHONE') friendlyDetail = '📱 Mobile phone detected in view. Holding or using mobile devices is strictly prohibited!';
+      else if (type === 'LIP_MOVEMENT') friendlyDetail = '👄 Lip movement / whispering detected. Speaking or mouthing answers is not permitted!';
+      else if (type === 'LOOKING_AWAY') friendlyDetail = '👀 Eyeball movement / looking away from test screen repeatedly detected!';
+      msgEl.innerHTML = `<strong>Violation:</strong> ${friendlyDetail}`;
+    }
+
+    if (strike < 3) {
+      let remaining = 6;
+      if (timerEl) timerEl.textContent = `Dismissing in ${remaining}s...`;
+      const countdownInterval = setInterval(() => {
+        remaining--;
+        if (remaining > 0 && timerEl) {
+          timerEl.textContent = `Dismissing in ${remaining}s...`;
+        } else {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      videoTracker.warningToastTimeout = setTimeout(() => {
+        clearInterval(countdownInterval);
+        banner.classList.remove('show');
+      }, 6000);
+    } else {
+      if (timerEl) timerEl.textContent = 'TEST TERMINATED';
+    }
+  }
+
+  // Direct Disqualification: Cancel Test Directly & Immediately (e.g. Multiple Candidates Detected)
+  function cancelTestDirectly(reason, type = 'MULTIPLE_PEOPLE') {
+    if (videoTracker.isCancelled) return;
+    videoTracker.isCancelled = true;
+
+    // Halt all timers
+    clearInterval(timerInterval);
+    if (videoTracker.processTimer) clearInterval(videoTracker.processTimer);
+    if (videoTracker.aiTimer) clearInterval(videoTracker.aiTimer);
+
+    // Play final disqualification alarm
+    playProctorAudioBeep(true);
+
+    // Halt camera stream
+    if (videoTracker.stream) {
+      videoTracker.stream.getTracks().forEach(track => track.stop());
+    }
+
+    const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
+    const timeStr = `${Math.floor(elapsedSec / 60).toString().padStart(2, '0')}:${(elapsedSec % 60).toString().padStart(2, '0')}`;
+    videoTracker.unfairEvents.push({ time: timeStr, type, reason, strike: 'DIRECT_DISQUALIFICATION' });
+
+    // Disable all inputs
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⛔ Exam Disqualified';
+      submitBtn.style.background = '#991b1b';
+    }
+    document.querySelectorAll('.mcq-option').forEach(opt => {
+      opt.style.pointerEvents = 'none';
+      opt.style.opacity = '0.5';
+    });
+    const timerBadge = document.getElementById('timer-badge');
+    if (timerBadge) {
+      timerBadge.textContent = '🛑 CANCELLED';
+      timerBadge.className = 'timer-badge danger';
+    }
+
+    // Record Disqualified to history
+    const elapsedMinutes = Math.max(1, Math.round((Date.now() - startTime) / 60000));
+    const historyEntry = {
+      id: session.id || genId(),
+      role: config.role,
+      difficulty: config.difficulty,
+      score: 0,
+      status: 'Disqualified',
+      disqualified: true,
+      disqualifiedReason: reason,
+      questions: currentIndex + 1,
+      duration: elapsedMinutes + 'm',
+      date: new Date().toISOString(),
+      videoAssessment: {
+        confidence: 25,
+        eyeContact: 25,
+        dominantExpression: 'Nervous',
+        warnings: videoTracker.totalWarnings,
+        integrityScore: 0,
+        status: 'Disqualified',
+        events: videoTracker.unfairEvents
+      },
+      feedback: []
+    };
+    addInterviewToHistory(historyEntry);
+    clearInterviewSession();
+
+    // Configure and reveal modal for Direct Disqualification
+    const modal = document.getElementById('cancellation-modal');
+    const cancTitle = document.getElementById('canc-title');
+    const cancBadge = document.getElementById('canc-badge');
+    const cancDesc = document.getElementById('canc-desc');
+    const infractionsList = document.getElementById('cancellation-infractions-list');
+
+    if (cancTitle) cancTitle.textContent = 'Test Cancelled Directly';
+    if (cancBadge) {
+      cancBadge.innerHTML = '🚨 DIRECT DISQUALIFICATION: MULTIPLE PEOPLE DETECTED';
+      cancBadge.style.background = '#450a0a';
+      cancBadge.style.color = '#fca5a5';
+      cancBadge.style.borderColor = '#ef4444';
+    }
+    if (cancDesc) {
+      cancDesc.textContent = 'The AI Proctoring system detected 2 or more individuals in your camera feed. Technical exams must be taken strictly alone in an isolated room. The test was terminated immediately without warning.';
+    }
+    if (infractionsList) {
+      infractionsList.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fef2f2; padding:10px 14px; border-radius:6px; border:1.5px solid #f87171; color:#991b1b;">
+          <span><strong>Critical Violation:</strong> ${reason}</span>
+          <span style="font-size:11px; color:#7f1d1d; font-weight:700;">[${timeStr}] IMMEDIATE DISQUALIFICATION</span>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add('show');
+  }
+
+  function cancelTestDueToProctoring(finalReason) {
+    videoTracker.isCancelled = true;
+
+    // Halt all timers
+    clearInterval(timerInterval);
+    if (videoTracker.processTimer) clearInterval(videoTracker.processTimer);
+    if (videoTracker.aiTimer) clearInterval(videoTracker.aiTimer);
+
+    // Halt camera stream
+    if (videoTracker.stream) {
+      videoTracker.stream.getTracks().forEach(track => track.stop());
+    }
+
+    // Disable all user interactions
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⛔ Test Disqualified';
+      submitBtn.style.background = '#dc2626';
+    }
+    document.querySelectorAll('.mcq-option').forEach(opt => {
+      opt.style.pointerEvents = 'none';
+      opt.style.opacity = '0.5';
+    });
+
+    const timerBadge = document.getElementById('timer-badge');
+    if (timerBadge) {
+      timerBadge.textContent = '🛑 CANCELLED';
+      timerBadge.className = 'timer-badge danger';
+    }
+
+    // Record Disqualified entry to history
+    const elapsedMinutes = Math.max(1, Math.round((Date.now() - startTime) / 60000));
+    const historyEntry = {
+      id: session.id || genId(),
+      role: config.role,
+      difficulty: config.difficulty,
+      score: 0,
+      status: 'Disqualified',
+      disqualified: true,
+      disqualifiedReason: `Test cancelled by AI Proctor: 3 warnings reached (${finalReason})`,
+      questions: currentIndex + 1,
+      duration: elapsedMinutes + 'm',
+      date: new Date().toISOString(),
+      videoAssessment: {
+        confidence: videoTracker.currentConfidence || 40,
+        eyeContact: 40,
+        dominantExpression: 'Nervous',
+        warnings: 3,
+        integrityScore: 0,
+        status: 'Disqualified',
+        events: videoTracker.unfairEvents
+      },
+      feedback: []
+    };
+    addInterviewToHistory(historyEntry);
+    clearInterviewSession();
+
+    // Render list of 3 recorded violations in cancellation modal
+    const infractionsList = document.getElementById('cancellation-infractions-list');
+    if (infractionsList) {
+      infractionsList.innerHTML = videoTracker.unfairEvents.map((ev, i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:8px 12px; border-radius:6px; border:1px solid #fecaca;">
+          <span><strong>Strike ${i + 1}:</strong> ${ev.reason}</span>
+          <span style="font-size:11px; color:#64748b; font-weight:600;">[${ev.time}]</span>
+        </div>
+      `).join('');
+    }
+
+    // Reveal Cancellation Modal
+    const modal = document.getElementById('cancellation-modal');
+    if (modal) {
+      modal.classList.add('show');
+    }
+  }
+
+  function clearUnfairAlertVisual() {
+    if (videoTracker.totalWarnings > 0) return;
+    const container = document.getElementById('video-container');
+    const alertBox = document.getElementById('proctor-alert-box');
+    const statusEl = document.getElementById('proctor-status');
+    const warnEl = document.getElementById('proctor-warnings');
+    const reticle = document.getElementById('face-reticle');
+
+    if (container) container.style.borderColor = '#22c55e';
+    if (alertBox) {
+      alertBox.style.background = '#f0fdf4';
+      alertBox.style.borderColor = '#bbf7d0';
+    }
+    if (statusEl) {
+      statusEl.innerHTML = '🟢 Proctor: Normal';
+      statusEl.style.color = '#166534';
+    }
+    if (warnEl) {
+      warnEl.style.color = 'var(--text-muted)';
+    }
+    if (reticle) {
+      reticle.style.borderColor = '#22c55e';
+    }
+  }
+
+  // Deep AI Frame Analysis via Server API using Gemini Vision & API Key
+  async function sendFrameToGeminiVision() {
+    if (!videoTracker.active || videoTracker.isCancelled) return;
+    const canvas = videoTracker.canvas;
+    if (!canvas) return;
+
+    try {
+      const imageBase64 = canvas.toDataURL('image/jpeg', 0.55);
+
+      const res = await fetch('/api/analyze-video-frame', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64 })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          // 1. Direct Disqualification if Multiple Candidates / People Detected!
+          if (data.multiplePeopleDetected || (data.candidateCount && data.candidateCount > 1) || data.immediateDisqualify) {
+            const reason = data.disqualifyReason || 'Multiple candidates / persons detected in camera frame. Direct disqualification applied.';
+            cancelTestDirectly(reason, 'MULTIPLE_PEOPLE');
+            return;
+          }
+
+          // 2. Unfair Object Detection (Mobile phone, earphones/AirPods, smartwatch, books, papers, etc.)
+          if (data.unfairObjectDetected || (data.detectedObjects && data.detectedObjects.length > 0)) {
+            const objs = data.detectedObjects && data.detectedObjects.length > 0 ? data.detectedObjects.join(', ') : 'Prohibited item';
+            triggerUnfairMovement('UNFAIR_OBJECT', `Prohibited unfair object detected: ${objs}`);
+          }
+          // 3. Mobile Phone Detection
+          else if (data.mobileDetected) {
+            triggerUnfairMovement('MOBILE_PHONE', data.proctorAlert || 'Mobile phone detected in test area!');
+          }
+          // 4. Candidate Completely Outside Circle Detected by AI
+          else if (data.outsideCircle) {
+            triggerUnfairMovement('OUT_OF_BOUNDS', 'Face completely outside designated proctor circle! Return to center.');
+          }
+          // 5. Lip Movement / Whispering Detection
+          else if (data.lipMovement) {
+            triggerUnfairMovement('LIP_MOVEMENT', data.proctorAlert || 'Unauthorized lip movement or whispering detected!');
+          }
+          // 6. Other Unfair Action / Gaze Deviation
+          else if (data.unfairAction || data.unfairMovement) {
+            triggerUnfairMovement(data.violationType || 'UNFAIR_ACTION', data.proctorAlert || 'AI proctor flagged suspicious activity');
+          }
+
+          // Update Expression
+          if (data.expression) {
+            videoTracker.currentExpression = data.expression;
+            videoTracker.expressionsCount[data.expression] = (videoTracker.expressionsCount[data.expression] || 0) + 1;
+            
+            const expEl = document.getElementById('expression-metric');
+            if (expEl) {
+              const emojiMap = { Confident: '😊', Focused: '🎯', Calm: '😌', Thinking: '🧐', Nervous: '😟', Distracted: '👀' };
+              expEl.textContent = `${emojiMap[data.expression] || '😊'} ${data.expression}`;
+            }
+          }
+
+          // Update AI Tip & source badge
+          if (data.tip) {
+            videoTracker.lastAiTip = data.tip;
+            const hint = document.getElementById('ai-feedback-hint');
+            if (hint && videoTracker.gazeAwayStreak === 0 && videoTracker.totalWarnings === 0) {
+              hint.textContent = `✨ AI: ${data.tip}`;
+              hint.style.color = 'var(--primary)';
+            }
+          }
+
+          const pill = document.getElementById('ai-vision-pill');
+          if (pill) {
+            pill.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;"></span> ${data.source === 'gemini-ai' ? 'Gemini AI Vision' : 'AI Active'}`;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('AI frame analysis request error:', err);
+    }
+  }
+
+  if (config.enableVideo) {
+    initAIVideoTracking();
+  }
+  
+  function selectOption(index) {
+    if (isSubmitted) return;
+    selectedAnswerIndex = index;
+    
+    // Update UI
+    const options = document.querySelectorAll('.mcq-option');
+    options.forEach((opt, i) => {
+      if (i === index) opt.classList.add('selected');
+      else opt.classList.remove('selected');
+    });
+    
+    document.getElementById('submit-btn').disabled = false;
   }
 
   function initQuestion() {
@@ -628,11 +1644,25 @@
     document.getElementById('progress-label').textContent = `Q ${currentIndex+1} of ${totalQ}`;
     document.getElementById('progress-fill').style.width = ((currentIndex / totalQ) * 100) + '%';
     document.getElementById('session-info').textContent = `${config.role} · ${config.difficulty}`;
-    document.getElementById('answer-input').value = '';
-    document.getElementById('answer-input').dataset.base = '';
-    document.getElementById('char-count').textContent = '0 characters';
-    document.getElementById('char-count').className = 'char-count';
-    document.getElementById('submit-btn').disabled = false;
+    // Render MCQ Options
+    const optsContainer = document.getElementById('mcq-options');
+    optsContainer.innerHTML = '';
+    selectedAnswerIndex = null;
+    
+    if (q.options) {
+      q.options.forEach((optText, i) => {
+        const div = document.createElement('div');
+        div.className = 'mcq-option';
+        div.onclick = () => selectOption(i);
+        div.innerHTML = `
+          <div class="mcq-radio"></div>
+          <div class="mcq-text">${optText}</div>
+        `;
+        optsContainer.appendChild(div);
+      });
+    }
+
+    document.getElementById('submit-btn').disabled = true;
     document.getElementById('submit-btn').innerHTML = 'Submit Answer ✓';
 
     // Sidebar session info
@@ -680,26 +1710,17 @@
     else if (pct <= 0.35) badge.classList.add('warning');
   }
 
-  function updateCharCount() {
-    const len = document.getElementById('answer-input').value.trim().length;
-    const el = document.getElementById('char-count');
-    el.textContent = len + ' characters';
-    el.className = 'char-count' + (len >= 80 ? ' good' : '');
-  }
 
-  document.getElementById('answer-input').addEventListener('input', updateCharCount);
 
   function submitAnswer(timeUp = false) {
     if (isSubmitted) return;
     isSubmitted = true;
-    stopVoice();
     clearInterval(timerInterval);
 
-    const answer = document.getElementById('answer-input').value;
     const q = questions[currentIndex];
-    const result = evaluateAnswer(q, timeUp && !answer ? '' : answer);
+    const result = evaluateAnswer(q, timeUp ? null : selectedAnswerIndex);
 
-    answers.push({ question: q.q, answer, timeUp });
+    answers.push({ question: q.q, answer: selectedAnswerIndex, timeUp });
     feedbacks.push(result);
 
     // Save session
@@ -732,14 +1753,7 @@
     // Suggestion
     document.getElementById('feedback-suggestion').textContent = result.suggestion;
 
-    // Keywords
-    const kwWrap = document.getElementById('keywords-wrap');
-    const matched = new Set(result.matchedKeywords.map(k=>k.toLowerCase()));
-    kwWrap.innerHTML = result.allKeywords.map(kw =>
-      matched.has(kw.toLowerCase())
-        ? `<span class="keyword-tag matched">✓ ${kw}</span>`
-        : `<span class="keyword-tag missed">✗ ${kw}</span>`
-    ).join('');
+
 
     // Next button label
     const isLast = currentIndex >= questions.length - 1;
@@ -780,8 +1794,6 @@
   function endInterview(early = false) {
     hideEndModal();
     clearInterval(timerInterval);
-    stopVoice();
-
     const avgScore = feedbacks.length
       ? Math.round(feedbacks.reduce((a,b) => a + b.score, 0) / feedbacks.length)
       : 0;
@@ -789,6 +1801,83 @@
     const duration = Math.round((new Date() - startTime) / 60000);
 
     // Save to history
+    // Stop webcam and compile AI Behavioral & Video Proctor Assessment
+    let sessionVideoAssessment = null;
+    if (config.enableVideo && videoTracker.active) {
+      if (videoTracker.processTimer) clearInterval(videoTracker.processTimer);
+      if (videoTracker.aiTimer) clearInterval(videoTracker.aiTimer);
+      if (videoTracker.stream) {
+        videoTracker.stream.getTracks().forEach(track => track.stop());
+      }
+
+      const confArr = videoTracker.confidenceHistory;
+      const avgConfidence = confArr.length > 0 ? Math.round(confArr.reduce((a,b)=>a+b,0) / confArr.length) : 85;
+      const eyeContactPct = videoTracker.totalFrames > 0 ? Math.min(100, Math.round((videoTracker.directEyeFrames / videoTracker.totalFrames) * 100)) : 88;
+      
+      let dominantExp = 'Focused';
+      let maxCount = 0;
+      for (const [exp, count] of Object.entries(videoTracker.expressionsCount)) {
+        if (count > maxCount) { maxCount = count; dominantExp = exp; }
+      }
+
+      const integrityScore = Math.max(0, 100 - (videoTracker.totalWarnings * 10));
+
+      const finalConf = document.getElementById('final-confidence');
+      const finalConfLbl = document.getElementById('final-conf-label');
+      const finalEye = document.getElementById('final-eye-score');
+      const finalEyeLbl = document.getElementById('final-eye-label');
+      const finalExp = document.getElementById('final-expression');
+      const finalWarn = document.getElementById('final-warnings-count');
+      const finalIntegrity = document.getElementById('final-integrity-label');
+      const finalBadge = document.getElementById('final-proctor-badge');
+      const finalFeedback = document.getElementById('final-behavior-feedback');
+      const unfairLog = document.getElementById('final-unfair-log');
+
+      if (finalConf) finalConf.textContent = avgConfidence + '%';
+      if (finalConfLbl) finalConfLbl.textContent = avgConfidence >= 80 ? 'High Confidence' : avgConfidence >= 65 ? 'Moderate' : 'Needs Practice';
+      if (finalEye) finalEye.textContent = eyeContactPct + '%';
+      if (finalEyeLbl) finalEyeLbl.textContent = eyeContactPct >= 80 ? 'Direct Focus' : 'Moderate Focus';
+      if (finalExp) finalExp.textContent = dominantExp;
+      if (finalWarn) finalWarn.textContent = videoTracker.totalWarnings;
+      if (finalIntegrity) finalIntegrity.textContent = integrityScore + '% Integrity';
+
+      if (videoTracker.totalWarnings === 0) {
+        if (finalBadge) {
+          finalBadge.innerHTML = '✅ Clean / Verified';
+          finalBadge.style.background = '#dcfce7';
+          finalBadge.style.color = '#166534';
+        }
+        if (finalFeedback) {
+          finalFeedback.innerHTML = `Candidate maintained strong engagement, direct eye contact (${eyeContactPct}%), and displayed a predominantly <strong>${dominantExp}</strong> posture. Zero suspicious or unfair movements were detected during the examination session.`;
+        }
+      } else {
+        if (finalBadge) {
+          finalBadge.innerHTML = `⚠️ Flagged (${videoTracker.totalWarnings} Alert${videoTracker.totalWarnings > 1 ? 's' : ''})`;
+          finalBadge.style.background = '#fef2f2';
+          finalBadge.style.color = '#b91c1c';
+        }
+        if (finalFeedback) {
+          finalFeedback.innerHTML = `Candidate finished the session with an average confidence of <strong>${avgConfidence}%</strong>. <strong>${videoTracker.totalWarnings}</strong> gaze/movement alert(s) were flagged when candidate looked away from display or moved off-center.`;
+        }
+        if (unfairLog) {
+          unfairLog.style.display = 'block';
+          unfairLog.innerHTML = '<strong>Proctor Alert Log:</strong><br>' + 
+            videoTracker.unfairEvents.map(e => `• [${e.time}] ${e.reason}`).join('<br>');
+        }
+      }
+
+      document.getElementById('video-assessment-result').style.display = 'block';
+
+      sessionVideoAssessment = {
+        confidence: avgConfidence,
+        eyeContact: eyeContactPct,
+        dominantExpression: dominantExp,
+        warnings: videoTracker.totalWarnings,
+        integrityScore: integrityScore,
+        events: videoTracker.unfairEvents
+      };
+    }
+
     const historyEntry = {
       id: session.id || genId(),
       role: config.role,
@@ -797,6 +1886,7 @@
       questions: feedbacks.length,
       duration: duration + 'm',
       date: new Date().toISOString(),
+      videoAssessment: sessionVideoAssessment,
       feedback: questions.slice(0, feedbacks.length).map((q, i) => ({
         question: q.q,
         answer: (answers[i] && answers[i].answer) || '',

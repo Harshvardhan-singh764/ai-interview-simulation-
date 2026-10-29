@@ -207,9 +207,26 @@
       <span class="nav-section-label">Main</span>
       <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
       <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <a href="resume.html" class="nav-link" data-page="resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <span class="nav-section-label">Practice Areas</span>
+      <a href="setup.html?role=Aptitude" class="nav-link" data-page="aptitude"><span class="nav-icon">🧠</span> Aptitude</a>
+      <a href="setup.html?role=Soft+Skills" class="nav-link" data-page="soft-skills"><span class="nav-icon">🗣️</span> Soft Skills</a>
+      <a href="setup.html?role=Reasoning" class="nav-link" data-page="reasoning"><span class="nav-icon">🧩</span> Reasoning</a>
       <span class="nav-section-label">Activity</span>
       <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
       <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      <span class="nav-section-label">To-Do List</span>
+      <div class="sidebar-todo" style="padding: 0 20px 10px; display: flex; flex-direction: column; gap: 10px;">
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-1" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Daily Mock Interview
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-2" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Review Past Mistakes
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-3" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Read Tech Blog
+        </label>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-card">
@@ -305,6 +322,21 @@
           </div>
         </div>
 
+        <!-- Step 5: Video Tracking -->
+        <div class="card animate-fade-up stagger-5" style="margin-bottom:20px">
+          <div class="setup-step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <div class="step-title">AI Video &amp; Proctor Tracking <span style="font-size:12px;color:var(--primary);font-weight:600">(AI-Powered)</span></div>
+              <label style="display: flex; align-items: center; gap: 10px; margin-top: 10px; cursor: pointer;">
+                <input type="checkbox" id="enable-video" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+                <span style="font-size: 15px; color: var(--text-dark); font-weight: 500;">Enable AI Webcam Tracking (Mobile Detection, Lip Movement &amp; 3-Warning Auto-Disqualify)</span>
+              </label>
+              <div class="form-hint" style="margin-top: 8px;">Monitors mobile phones, lip movement/whispering, eyeball deviation, and suspicious behavior in real-time. 3 warnings automatically cancel the test.</div>
+            </div>
+          </div>
+        </div>
+
         <div id="setup-error" style="display:none"></div>
 
         <button class="btn btn-primary btn-lg btn-full" onclick="startInterview()" id="start-btn">
@@ -360,6 +392,7 @@
   </main>
 </div>
 
+<script src="js/questions.js"></script>
 <script src="js/utils.js"></script>
 <script>
   requireAuth();
@@ -375,7 +408,10 @@
     { name: 'Data Scientist', emoji: '📊' },
     { name: 'Product Manager', emoji: '🚀' },
     { name: 'UX Designer', emoji: '🎨' },
-    { name: 'DevOps Engineer', emoji: '⚙️' }
+    { name: 'DevOps Engineer', emoji: '⚙️' },
+    { name: 'Aptitude', emoji: '🧠' },
+    { name: 'Soft Skills', emoji: '🗣️' },
+    { name: 'Reasoning', emoji: '🧩' }
   ];
 
   document.getElementById('role-grid').innerHTML = roleData.map(r => `
@@ -385,8 +421,16 @@
     </div>
   `).join('');
 
+  // Read URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramRole = urlParams.get('role');
+
   // Default selections
-  selectRole('Software Engineer');
+  if (paramRole && roleData.find(r => r.name === paramRole)) {
+    selectRole(paramRole);
+  } else {
+    selectRole('Software Engineer');
+  }
   selectDiff('Intermediate');
   selectCount(5);
 
@@ -432,7 +476,7 @@
     document.getElementById('prev-est').textContent = '~' + estMin + ' min';
   }
 
-  function startInterview() {
+  async function startInterview() {
     const errEl = document.getElementById('setup-error');
     if (!selectedRole) {
       errEl.className = 'alert alert-error';
@@ -452,27 +496,36 @@
     btn.innerHTML = '<div class="spinner"></div> Preparing questions...';
     btn.disabled = true;
 
-    const questions = generateQuestions(selectedRole, selectedDiff, selectedCount);
-    const config = {
-      role: selectedRole,
-      difficulty: selectedDiff,
-      count: selectedCount,
-      topics: document.getElementById('custom-topics').value,
-      timerSec: DIFFICULTY_TIMERS[selectedDiff]
-    };
-    const session = {
-      id: genId(),
-      questions,
-      currentIndex: 0,
-      answers: [],
-      scores: [],
-      startTime: new Date().toISOString()
-    };
+    try {
+      const questions = await generateQuestions(selectedRole, selectedDiff, selectedCount);
+      const config = {
+        role: selectedRole,
+        difficulty: selectedDiff,
+        count: selectedCount,
+        topics: document.getElementById('custom-topics').value,
+        timerSec: DIFFICULTY_TIMERS[selectedDiff],
+        enableVideo: document.getElementById('enable-video') ? document.getElementById('enable-video').checked : false
+      };
+      const session = {
+        id: genId(),
+        questions,
+        currentIndex: 0,
+        answers: [],
+        scores: [],
+        startTime: new Date().toISOString()
+      };
 
-    setInterviewConfig(config);
-    setInterviewSession(session);
+      setInterviewConfig(config);
+      setInterviewSession(session);
 
-    setTimeout(() => { window.location.href = 'interview.html'; }, 600);
+      window.location.href = 'interview.html';
+    } catch (error) {
+      btn.innerHTML = 'Start Interview <i class="fa-solid fa-arrow-right"></i>';
+      btn.disabled = false;
+      errEl.className = 'alert alert-error';
+      errEl.innerHTML = '⚠️ Failed to generate questions. Please try again.';
+      errEl.style.display = 'flex';
+    }
   }
 </script>
 </body>

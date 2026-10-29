@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile — AI Interview Simulation</title>
-  <meta name="description" content="Manage your profile, change password, and account settings.">
+  <title>Profile &amp; Settings — AI Interview Simulation</title>
+  <meta name="description" content="Manage your candidate profile, technical skills, certifications, and AI interview preferences.">
   <link rel="stylesheet" href="css/style.css">
   <style>
     .profile-grid {
@@ -18,99 +18,153 @@
       background: var(--bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
-      padding: 32px;
+      padding: 28px 24px;
       text-align: center;
       box-shadow: var(--card-shadow);
+      position: sticky;
+      top: 24px;
     }
 
     .profile-avatar-wrap {
       position: relative;
       display: inline-block;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .profile-avatar {
-      width: 100px; height: 100px;
+      width: 96px; height: 96px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--primary));
       display: flex; align-items: center; justify-content: center;
-      font-size: 36px; font-weight: 800; color: white;
+      font-size: 34px; font-weight: 800; color: white;
       box-shadow: 0 8px 24px rgba(59,130,246,0.3);
-    }
-
-    .avatar-edit-btn {
-      position: absolute;
-      bottom: 2px; right: 2px;
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--primary); color: white;
-      border: 3px solid var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; cursor: pointer;
+      border: 3px solid #ffffff;
     }
 
     .profile-name {
-      font-size: 20px; font-weight: 800;
-      color: var(--text-dark); margin-bottom: 4px;
+      font-size: 19px; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 2px;
     }
 
     .profile-email {
-      font-size: 14px; color: var(--text-muted);
-      margin-bottom: 16px;
+      font-size: 13px; color: var(--text-muted);
+      margin-bottom: 12px; word-break: break-all;
+    }
+
+    .profile-badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 18px;
     }
 
     .profile-info-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 0;
+      padding: 9px 0;
       border-top: 1px solid var(--card-border);
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     .profile-info-label { color: var(--text-muted); }
     .profile-info-value { color: var(--text-dark); font-weight: 600; }
 
     .profile-stats-row {
-      display: flex; gap: 16px;
-      margin-top: 20px;
+      display: flex; gap: 10px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
     }
 
     .profile-stat {
       flex: 1;
       background: var(--bg-secondary);
       border-radius: var(--radius-sm);
-      padding: 12px 8px;
+      padding: 10px 6px;
       text-align: center;
     }
 
-    .profile-stat-val { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+    .profile-stat-val { font-size: 17px; font-weight: 800; color: var(--text-dark); }
     .profile-stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-    .settings-section {
-      margin-bottom: 24px;
+    /* FORM CARD STYLING */
+    .settings-card {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--card-shadow);
     }
 
     .settings-section-title {
-      font-size: 16px; font-weight: 700;
+      font-size: 15px; font-weight: 700;
       color: var(--text-dark);
       margin-bottom: 16px;
       display: flex; align-items: center; gap: 8px;
+      border-bottom: 1.5px solid var(--bg-secondary);
+      padding-bottom: 10px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* SKILL TAGS */
+    .skills-tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .skill-tag {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .skill-tag-remove {
+      cursor: pointer;
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1;
+    }
+
+    .skill-tag-remove:hover {
+      color: #dc2626;
     }
 
     .danger-zone {
       background: #fef2f2;
       border: 1px solid #fecaca;
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 20px;
     }
 
     .danger-zone h4 {
-      font-size: 15px; font-weight: 700;
-      color: #dc2626; margin-bottom: 8px;
+      font-size: 14px; font-weight: 700;
+      color: #dc2626; margin-bottom: 6px;
     }
 
     .danger-zone p {
-      font-size: 13px; color: #991b1b;
-      margin-bottom: 16px;
+      font-size: 12.5px; color: #991b1b;
+      margin-bottom: 14px;
     }
 
     .success-toast {
@@ -126,6 +180,8 @@
 
     @media (max-width: 900px) {
       .profile-grid { grid-template-columns: 1fr; }
+      .profile-sidebar-card { position: static; }
+      .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -143,6 +199,11 @@
       <span class="nav-section-label">Main</span>
       <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
       <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <a href="resume.html" class="nav-link" data-page="resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <span class="nav-section-label">Practice Areas</span>
+      <a href="setup.html?role=Aptitude" class="nav-link" data-page="aptitude"><span class="nav-icon">🧠</span> Aptitude</a>
+      <a href="setup.html?role=Soft+Skills" class="nav-link" data-page="soft-skills"><span class="nav-icon">🗣️</span> Soft Skills</a>
+      <a href="setup.html?role=Reasoning" class="nav-link" data-page="reasoning"><span class="nav-icon">🧩</span> Reasoning</a>
       <span class="nav-section-label">Activity</span>
       <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
       <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
@@ -163,31 +224,42 @@
   <main class="main-content">
 
     <div class="page-header animate-fade-up">
-      <div class="page-title">👤 Profile & Settings</div>
-      <div class="page-subtitle">Manage your account and preferences</div>
+      <div class="page-title">👤 Candidate Profile &amp; Settings</div>
+      <div class="page-subtitle">Manage your personal details, career background, technical skills, and AI interview preferences.</div>
     </div>
 
     <div class="profile-grid">
 
-      <!-- Left: Profile Card -->
+      <!-- Left: Profile Summary Card -->
       <div>
         <div class="profile-sidebar-card animate-fade-up stagger-1">
           <div class="profile-avatar-wrap">
             <div class="profile-avatar" id="profile-avatar">HV</div>
-            <div class="avatar-edit-btn" title="Change avatar">📷</div>
           </div>
           <div class="profile-name" id="profile-name">Harsh Vardhan Singh</div>
           <div class="profile-email" id="profile-email">harsh@example.com</div>
-          <span class="badge badge-blue">Active Member</span>
+          
+          <div class="profile-badges-row">
+            <span class="badge badge-blue" id="profile-role-badge">Software Engineer</span>
+            <span class="badge badge-green">✓ Verified</span>
+          </div>
 
-          <div style="margin-top:20px">
+          <div>
             <div class="profile-info-row">
-              <span class="profile-info-label">Member Since</span>
-              <span class="profile-info-value" id="profile-joined">Jan 2025</span>
+              <span class="profile-info-label">📍 Location</span>
+              <span class="profile-info-value" id="pf-loc-display">Bangalore, IN</span>
             </div>
             <div class="profile-info-row">
-              <span class="profile-info-label">Role</span>
-              <span class="profile-info-value" id="profile-title">Software Engineer</span>
+              <span class="profile-info-label">📱 Phone</span>
+              <span class="profile-info-value" id="pf-phone-display">+91 98765 43210</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">🎯 Target Role</span>
+              <span class="profile-info-value" id="pf-target-display">Full Stack Dev</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">📅 Member Since</span>
+              <span class="profile-info-value" id="profile-joined">Jan 2025</span>
             </div>
           </div>
 
@@ -208,94 +280,203 @@
         </div>
       </div>
 
-      <!-- Right: Settings -->
+      <!-- Right: Detailed Settings Sections -->
       <div>
 
-        <!-- Edit Profile -->
-        <div class="card animate-fade-up stagger-2" style="margin-bottom:20px">
-          <div class="settings-section">
-            <div class="settings-section-title">✏️ Edit Profile</div>
+        <!-- 1. PERSONAL & CONTACT DETAILS -->
+        <div class="settings-card animate-fade-up stagger-2">
+          <div class="settings-section-title">1. 👤 Personal &amp; Contact Details</div>
+          
+          <div class="form-row-2">
             <div class="form-group">
-              <label class="form-label" for="edit-name">Full Name</label>
-              <input type="text" class="form-control" id="edit-name" value="Harsh Vardhan Singh">
+              <label class="form-label" for="edit-name">Full Name <span style="color:#ef4444">*</span></label>
+              <input type="text" class="form-control" id="edit-name" placeholder="John Doe">
             </div>
             <div class="form-group">
-              <label class="form-label" for="edit-email">Email Address</label>
-              <input type="email" class="form-control" id="edit-email" value="harsh@example.com">
+              <label class="form-label" for="edit-email">Email Address <span style="color:#ef4444">*</span></label>
+              <input type="email" class="form-control" id="edit-email" placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between;">
+                <label class="form-label" for="edit-phone">10-Digit Mobile Phone</label>
+                <span id="edit-phone-hint" style="font-size:11px; font-weight:700; color:var(--text-muted);">10 digits</span>
+              </div>
+              <input type="tel" class="form-control" id="edit-phone" placeholder="98765 43210" maxlength="14" oninput="onPhoneChange(this)">
             </div>
             <div class="form-group">
-              <label class="form-label" for="edit-title">Job Title</label>
-              <input type="text" class="form-control" id="edit-title" value="Software Engineer">
+              <label class="form-label" for="edit-location">Location (City, Country)</label>
+              <input type="text" class="form-control" id="edit-location" placeholder="e.g. Bangalore, India">
             </div>
-            <button class="btn btn-primary" onclick="saveProfile()">💾 Save Changes</button>
           </div>
         </div>
 
-        <!-- Change Password -->
-        <div class="card animate-fade-up stagger-3" style="margin-bottom:20px">
-          <div class="settings-section">
-            <div class="settings-section-title">🔒 Change Password</div>
+        <!-- 2. PROFESSIONAL BACKGROUND -->
+        <div class="settings-card animate-fade-up stagger-2">
+          <div class="settings-section-title">2. 💼 Professional Background &amp; Target Role</div>
+          
+          <div class="form-row-2">
             <div class="form-group">
-              <label class="form-label" for="curr-pass">Current Password</label>
-              <input type="password" class="form-control" id="curr-pass" placeholder="Enter current password">
+              <label class="form-label" for="edit-title">Current Job Title</label>
+              <input type="text" class="form-control" id="edit-title" placeholder="e.g. Senior Software Engineer">
             </div>
             <div class="form-group">
-              <label class="form-label" for="new-pass">New Password</label>
+              <label class="form-label" for="edit-target-role">Target Interview Role</label>
+              <input type="text" class="form-control" id="edit-target-role" placeholder="e.g. Full Stack Developer">
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="edit-exp-level">Experience Level</label>
+              <select class="form-select" id="edit-exp-level">
+                <option value="Entry-Level">Student / Fresher</option>
+                <option value="Junior">Junior (1-2 yrs)</option>
+                <option value="Mid-Level" selected>Mid-Level (2-5 yrs)</option>
+                <option value="Senior">Senior (5-8 yrs)</option>
+                <option value="Lead/Staff">Lead / Staff (8+ yrs)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-years-exp">Total Years of Experience</label>
+              <input type="text" class="form-control" id="edit-years-exp" placeholder="e.g. 3.5 years">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-company">Current Organization / College</label>
+              <input type="text" class="form-control" id="edit-company" placeholder="e.g. Acme Tech Labs">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-bio">Career Bio &amp; Professional Objective</label>
+            <textarea class="form-control" id="edit-bio" rows="3" placeholder="Brief summary of your background, architectural focus, and career goals..."></textarea>
+          </div>
+        </div>
+
+        <!-- 3. ONLINE PRESENCE & LINKS -->
+        <div class="settings-card animate-fade-up stagger-3">
+          <div class="settings-section-title">3. 🔗 Links &amp; Online Portfolios</div>
+          
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="edit-linkedin">LinkedIn Profile</label>
+              <input type="text" class="form-control" id="edit-linkedin" placeholder="linkedin.com/in/username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-github">GitHub Profile</label>
+              <input type="text" class="form-control" id="edit-github" placeholder="github.com/username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-portfolio">Portfolio / Website</label>
+              <input type="text" class="form-control" id="edit-portfolio" placeholder="https://yourdomain.com">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SKILLS & EDUCATION -->
+        <div class="settings-card animate-fade-up stagger-3">
+          <div class="settings-section-title">4. 🛠️ Technical Stack, Skills &amp; Education</div>
+          
+          <div class="form-group">
+            <label class="form-label" for="edit-skills">Primary Technical Skills (Comma-separated)</label>
+            <input type="text" class="form-control" id="edit-skills" placeholder="React, Node.js, Python, TypeScript, Docker, PostgreSQL, AWS" oninput="renderSkillBadges(this.value)">
+            <div class="skills-tag-container" id="skills-tag-display"></div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="edit-education">Education (Degree &amp; College)</label>
+              <input type="text" class="form-control" id="edit-education" placeholder="B.Tech in Computer Science — NIT (2021)">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-certifications">Certifications</label>
+              <input type="text" class="form-control" id="edit-certifications" placeholder="AWS Solutions Architect, CKAD">
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveAllProfileDetails()" style="margin-top:10px;">
+            <span>💾 Save Profile Details to Database</span>
+          </button>
+        </div>
+
+        <!-- 5. AI INTERVIEW PREFERENCES -->
+        <div class="settings-card animate-fade-up stagger-4">
+          <div class="settings-section-title">5. ⚙️ AI Interview Simulation Preferences</div>
+          
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Default Practice Role</label>
+              <select class="form-select" id="pref-role">
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="Product Manager">Product Manager</option>
+                <option value="UX Designer">UX Designer</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+                <option value="Aptitude">Aptitude &amp; Reasoning</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default Difficulty</label>
+              <select class="form-select" id="pref-diff">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="pref-camera" checked style="accent-color:var(--primary);">
+              <span>Enable AI Webcam Proctoring &amp; Eyeball Movement Tracking by default</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="pref-mic" checked style="accent-color:var(--primary);">
+              <span>Enable Microphone &amp; Voice-to-Text Answer Transcription</span>
+            </label>
+          </div>
+
+          <button class="btn btn-outline" onclick="savePreferences()" style="margin-top:16px;">
+            <span>Save Preferences</span>
+          </button>
+        </div>
+
+        <!-- 6. CHANGE PASSWORD -->
+        <div class="settings-card animate-fade-up stagger-4">
+          <div class="settings-section-title">6. 🔒 Change Account Password</div>
+          <div class="form-group">
+            <label class="form-label" for="curr-pass">Current Password</label>
+            <input type="password" class="form-control" id="curr-pass" placeholder="Enter current password">
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="new-pass">New Password (min 4 chars)</label>
               <input type="password" class="form-control" id="new-pass" placeholder="Enter new password">
             </div>
             <div class="form-group">
               <label class="form-label" for="confirm-pass">Confirm New Password</label>
               <input type="password" class="form-control" id="confirm-pass" placeholder="Confirm new password">
             </div>
-            <div id="pass-error" style="display:none"></div>
-            <button class="btn btn-primary" onclick="changePassword()">🔑 Update Password</button>
           </div>
+          <div id="pass-error" style="display:none"></div>
+          <button class="btn btn-primary" onclick="changePassword()">🔑 Update Password</button>
         </div>
 
-        <!-- Preferences -->
-        <div class="card animate-fade-up stagger-4" style="margin-bottom:20px">
-          <div class="settings-section">
-            <div class="settings-section-title">⚙️ Preferences</div>
-            <div class="form-group">
-              <label class="form-label">Default Interview Role</label>
-              <select class="form-select" id="pref-role">
-                <option value="">No preference</option>
-                <option>Software Engineer</option>
-                <option>Data Scientist</option>
-                <option>Product Manager</option>
-                <option>UX Designer</option>
-                <option>DevOps Engineer</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Default Difficulty</label>
-              <select class="form-select" id="pref-diff">
-                <option value="">No preference</option>
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
-              </select>
-            </div>
-            <button class="btn btn-ghost" onclick="showToast('Preferences saved!')">Save Preferences</button>
+        <!-- 7. DATA EXPORT & DANGER ZONE -->
+        <div class="settings-card animate-fade-up stagger-4">
+          <div class="settings-section-title">7. 📦 History &amp; Data Management</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
+            <button class="btn btn-outline" onclick="exportData()">📥 Export Interview History (JSON)</button>
+            <button class="btn btn-outline" onclick="clearData()">🗑️ Clear Interview History</button>
           </div>
-        </div>
 
-        <!-- Data Management -->
-        <div class="card animate-fade-up stagger-4" style="margin-bottom:20px">
-          <div class="settings-section">
-            <div class="settings-section-title">📦 Data Management</div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap">
-              <button class="btn btn-ghost" onclick="exportData()">📥 Export History (JSON)</button>
-              <button class="btn btn-ghost" onclick="clearData()">🗑️ Clear All History</button>
-            </div>
+          <div class="danger-zone">
+            <h4>⚠️ Sign Out of Session</h4>
+            <p>Your session will be securely terminated. All SQLite database profile records and interview ratings will persist safely.</p>
+            <button class="btn btn-danger" onclick="doLogout()">🚪 Log Out</button>
           </div>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="danger-zone animate-fade-up stagger-4">
-          <h4>⚠️ Danger Zone</h4>
-          <p>Logging out will clear your session. Your interview history is saved locally and will persist.</p>
-          <button class="btn btn-danger" onclick="doLogout()">🚪 Logout</button>
         </div>
 
       </div>
@@ -306,69 +487,171 @@
 
 <div class="success-toast" id="toast">✓ Saved successfully!</div>
 
+<script src="js/questions.js"></script>
 <script src="js/utils.js"></script>
 <script>
   const user = requireAuth();
   populateSidebar('profile');
 
-  // Fill profile
-  document.getElementById('profile-name').textContent = user.name;
-  document.getElementById('profile-email').textContent = user.email;
-  document.getElementById('profile-avatar').textContent = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('edit-name').value = user.name;
-  document.getElementById('edit-email').value = user.email;
-  document.getElementById('edit-title').value = user.title || 'Software Engineer';
+  // Populate initial fields
+  function loadUserProfile() {
+    document.getElementById('profile-name').textContent = user.name || 'Harsh Vardhan Singh';
+    document.getElementById('profile-email').textContent = user.email || 'harsh@example.com';
+    document.getElementById('profile-avatar').textContent = (user.name || 'HV').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    
+    document.getElementById('edit-name').value = user.name || '';
+    document.getElementById('edit-email').value = user.email || '';
+    document.getElementById('edit-phone').value = user.phone ? formatPhoneDisplay(user.phone) : '';
+    document.getElementById('edit-location').value = user.location || 'Bangalore, India';
+    
+    document.getElementById('edit-title').value = user.title || 'Senior Software Engineer';
+    document.getElementById('edit-target-role').value = user.target_role || 'Full Stack Developer';
+    document.getElementById('edit-exp-level').value = user.experience_level || 'Mid-Level';
+    document.getElementById('edit-years-exp').value = user.years_exp || '3.5 years';
+    document.getElementById('edit-company').value = user.current_company || 'Acme Tech Innovations';
+    document.getElementById('edit-bio').value = user.bio || 'Passionate software engineer building resilient web systems and AI applications.';
 
-  const joinDate = new Date(user.joinDate);
-  document.getElementById('profile-joined').textContent = joinDate.toLocaleDateString('en-US', { month:'short', year:'numeric' });
-  document.getElementById('profile-title').textContent = user.title || 'Software Engineer';
+    document.getElementById('edit-linkedin').value = user.linkedin || 'linkedin.com/in/harshvardhan';
+    document.getElementById('edit-github').value = user.github || 'github.com/harshvardhan';
+    document.getElementById('edit-portfolio').value = user.portfolio || 'https://harshvardhan.dev';
 
-  // Stats
-  const history = getHistory();
-  const scores = history.map(h => h.score);
-  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
-  const best = scores.length ? Math.max(...scores) : 0;
-  document.getElementById('pf-total').textContent = history.length;
-  document.getElementById('pf-avg').textContent = avg + '%';
-  document.getElementById('pf-best').textContent = best + '%';
+    const skillsStr = Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || 'React, Node.js, Python, TypeScript, Docker, PostgreSQL, AWS');
+    document.getElementById('edit-skills').value = skillsStr;
+    renderSkillBadges(skillsStr);
 
-  function saveProfile() {
-    const name = document.getElementById('edit-name').value.trim();
-    const email = document.getElementById('edit-email').value.trim();
-    const title = document.getElementById('edit-title').value.trim();
-    if (!name || !email) { showToast('Please fill in all fields'); return; }
-    user.name = name;
-    user.email = email;
-    user.title = title;
-    sessionStorage.setItem('ai_user', JSON.stringify(user));
-    document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-email').textContent = email;
-    document.getElementById('profile-avatar').textContent = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-    document.getElementById('sidebar-user-name').textContent = name;
-    document.getElementById('sidebar-user-email').textContent = email;
-    document.getElementById('sidebar-avatar').textContent = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-    showToast('Profile updated successfully!');
+    document.getElementById('edit-education').value = user.education || 'B.Tech in Computer Science — NIT (2021)';
+    document.getElementById('edit-certifications').value = user.certifications || 'AWS Solutions Architect Associate, CKAD';
+
+    // Update left sidebar summary
+    document.getElementById('profile-role-badge').textContent = user.title || 'Software Engineer';
+    document.getElementById('pf-loc-display').textContent = user.location || 'Bangalore, IN';
+    document.getElementById('pf-phone-display').textContent = user.phone ? '+91 ' + user.phone : 'Not set';
+    document.getElementById('pf-target-display').textContent = user.target_role || 'Full Stack Dev';
+
+    const joinDate = new Date(user.joinDate || Date.now());
+    document.getElementById('profile-joined').textContent = joinDate.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+
+    // Preferences
+    if (user.preferences) {
+      if (user.preferences.defaultRole) document.getElementById('pref-role').value = user.preferences.defaultRole;
+      if (user.preferences.defaultDifficulty) document.getElementById('pref-diff').value = user.preferences.defaultDifficulty;
+      if (user.preferences.cameraDefault !== undefined) document.getElementById('pref-camera').checked = !!user.preferences.cameraDefault;
+      if (user.preferences.micDefault !== undefined) document.getElementById('pref-mic').checked = !!user.preferences.micDefault;
+    }
+
+    // Interview History Stats
+    const history = getHistory();
+    const scores = history.map(h => h.score);
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+    const best = scores.length ? Math.max(...scores) : 0;
+    document.getElementById('pf-total').textContent = history.length;
+    document.getElementById('pf-avg').textContent = avg + '%';
+    document.getElementById('pf-best').textContent = best + '%';
   }
 
-  function changePassword() {
+  function formatPhoneDisplay(raw) {
+    const clean = raw.replace(/\D/g, '');
+    if (clean.length === 10) return clean.slice(0, 5) + ' ' + clean.slice(5);
+    return clean;
+  }
+
+  function onPhoneChange(inp) {
+    let val = inp.value.replace(/\D/g, '');
+    if (val.length === 12 && val.startsWith('91')) val = val.slice(2);
+    if (val.length > 10) val = val.slice(0, 10);
+    inp.value = val.length > 5 ? val.slice(0, 5) + ' ' + val.slice(5) : val;
+
+    const hint = document.getElementById('edit-phone-hint');
+    if (hint) {
+      if (val.length === 10) { hint.textContent = '✓ 10 digits'; hint.style.color = '#16a34a'; }
+      else { hint.textContent = `${val.length}/10 digits`; hint.style.color = '#f59e0b'; }
+    }
+  }
+
+  function renderSkillBadges(str) {
+    const container = document.getElementById('skills-tag-display');
+    if (!container) return;
+    const skills = str.split(',').map(s => s.trim()).filter(Boolean);
+    container.innerHTML = skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+  }
+
+  async function saveAllProfileDetails() {
+    const name = document.getElementById('edit-name').value.trim();
+    const email = document.getElementById('edit-email').value.trim();
+    if (!name || !email) {
+      alert('Name and Email are required.');
+      return;
+    }
+
+    user.name = name;
+    user.email = email;
+    user.phone = document.getElementById('edit-phone').value.replace(/\D/g, '');
+    user.location = document.getElementById('edit-location').value.trim();
+    user.title = document.getElementById('edit-title').value.trim();
+    user.target_role = document.getElementById('edit-target-role').value.trim();
+    user.experience_level = document.getElementById('edit-exp-level').value;
+    user.years_exp = document.getElementById('edit-years-exp').value.trim();
+    user.current_company = document.getElementById('edit-company').value.trim();
+    user.bio = document.getElementById('edit-bio').value.trim();
+    user.linkedin = document.getElementById('edit-linkedin').value.trim();
+    user.github = document.getElementById('edit-github').value.trim();
+    user.portfolio = document.getElementById('edit-portfolio').value.trim();
+    user.skills = document.getElementById('edit-skills').value.split(',').map(s=>s.trim()).filter(Boolean);
+    user.education = document.getElementById('edit-education').value.trim();
+    user.certifications = document.getElementById('edit-certifications').value.trim();
+
+    // Persist to backend SQLite Database
+    try {
+      await updateUserProfile(user);
+      sessionStorage.setItem('ai_user', JSON.stringify(user));
+      loadUserProfile();
+      showToast('Profile and complete details saved to SQLite database!');
+    } catch (err) {
+      alert('Error updating profile: ' + err.message);
+    }
+  }
+
+  async function savePreferences() {
+    user.preferences = user.preferences || {};
+    user.preferences.defaultRole = document.getElementById('pref-role').value;
+    user.preferences.defaultDifficulty = document.getElementById('pref-diff').value;
+    user.preferences.cameraDefault = document.getElementById('pref-camera').checked;
+    user.preferences.micDefault = document.getElementById('pref-mic').checked;
+
+    await updateUserProfile(user);
+    sessionStorage.setItem('ai_user', JSON.stringify(user));
+    showToast('AI Simulation preferences updated!');
+  }
+
+  async function changePassword() {
     const curr = document.getElementById('curr-pass').value;
     const newP = document.getElementById('new-pass').value;
     const conf = document.getElementById('confirm-pass').value;
     const errEl = document.getElementById('pass-error');
     if (!curr || !newP || !conf) {
-      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Please fill all fields.'; errEl.style.display = 'flex'; return;
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Please fill all password fields.'; errEl.style.display = 'flex'; return;
     }
-    if (newP.length < 6) {
-      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Password must be at least 6 characters.'; errEl.style.display = 'flex'; return;
+    
+    if (newP.length < 4) {
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return;
     }
     if (newP !== conf) {
       errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ Passwords do not match.'; errEl.style.display = 'flex'; return;
     }
+    
+    const result = await updatePassword(user.email, newP, curr);
+    if (!result.success) {
+      errEl.className = 'alert alert-error'; errEl.innerHTML = '⚠️ ' + result.error; errEl.style.display = 'flex'; return;
+    }
+    
+    user.password = newP;
+    sessionStorage.setItem('ai_user', JSON.stringify(user));
+
     errEl.style.display = 'none';
     document.getElementById('curr-pass').value = '';
     document.getElementById('new-pass').value = '';
     document.getElementById('confirm-pass').value = '';
-    showToast('Password changed successfully!');
+    showToast('Password updated in database!');
   }
 
   function exportData() {
@@ -397,6 +680,8 @@
     t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
   }
+
+  loadUserProfile();
 </script>
 </body>
 </html>

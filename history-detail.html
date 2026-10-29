@@ -184,9 +184,26 @@
       <span class="nav-section-label">Main</span>
       <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
       <a href="setup.html" class="nav-link" data-page="setup"><span class="nav-icon">🚀</span> New Interview</a>
+      <a href="resume.html" class="nav-link" data-page="resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <span class="nav-section-label">Practice Areas</span>
+      <a href="setup.html?role=Aptitude" class="nav-link" data-page="aptitude"><span class="nav-icon">🧠</span> Aptitude</a>
+      <a href="setup.html?role=Soft+Skills" class="nav-link" data-page="soft-skills"><span class="nav-icon">🗣️</span> Soft Skills</a>
+      <a href="setup.html?role=Reasoning" class="nav-link" data-page="reasoning"><span class="nav-icon">🧩</span> Reasoning</a>
       <span class="nav-section-label">Activity</span>
       <a href="history.html" class="nav-link" data-page="history"><span class="nav-icon">📋</span> History</a>
       <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      <span class="nav-section-label">To-Do List</span>
+      <div class="sidebar-todo" style="padding: 0 20px 10px; display: flex; flex-direction: column; gap: 10px;">
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-1" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Daily Mock Interview
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-2" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Review Past Mistakes
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-3" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Read Tech Blog
+        </label>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-card">
@@ -250,6 +267,9 @@
       </div>
     </div>
 
+    <!-- Video & Behavioral Assessment (if present) -->
+    <div id="video-assessment-card" style="display:none; margin-bottom: 24px;"></div>
+
     <!-- Per-question accordion -->
     <div class="card-header" style="margin-bottom:16px">
       <span class="card-title">📝 Question-by-Question Review</span>
@@ -266,6 +286,7 @@
   </main>
 </div>
 
+<script src="js/questions.js"></script>
 <script src="js/utils.js"></script>
 <script>
   requireAuth();
@@ -288,8 +309,22 @@
   }
 
   function renderDetail(iv) {
-    const color = getScoreColor(iv.score);
-    const grade = iv.score >= 85 ? 'A' : iv.score >= 70 ? 'B' : iv.score >= 55 ? 'C' : iv.score >= 40 ? 'D' : 'F';
+    if (iv.status === 'Disqualified') {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#fee2e2; border:1.5px solid #ef4444; border-radius:12px; padding:16px 20px; color:#991b1b; margin-bottom:20px; display:flex; align-items:center; gap:12px;';
+      banner.innerHTML = `
+        <span style="font-size:26px;">🛑</span>
+        <div>
+          <div style="font-weight:800; font-size:15px;">EXAMINATION CANCELLED &amp; DISQUALIFIED</div>
+          <div style="font-size:13px; color:#7f1d1d; margin-top:2px;">${iv.disqualifiedReason || 'Terminated by AI Proctoring system after candidate received 3 warnings.'}</div>
+        </div>
+      `;
+      const headerEl = document.getElementById('detail-header');
+      if (headerEl) headerEl.parentNode.insertBefore(banner, headerEl);
+    }
+
+    const color = iv.status === 'Disqualified' ? '#dc2626' : getScoreColor(iv.score);
+    const grade = iv.status === 'Disqualified' ? 'DISQ' : (iv.score >= 85 ? 'A' : iv.score >= 70 ? 'B' : iv.score >= 55 ? 'C' : iv.score >= 40 ? 'D' : 'F');
 
     document.getElementById('bc-title').textContent = iv.role + ' — ' + formatDate(iv.date);
     document.getElementById('detail-role').textContent = iv.role + ' Interview';
@@ -366,6 +401,51 @@
         }
       }
     });
+
+    // Video Behavioral Assessment
+    if (iv.videoAssessment) {
+      const va = iv.videoAssessment;
+      const vaCard = document.getElementById('video-assessment-card');
+      if (vaCard) {
+        vaCard.style.display = 'block';
+        vaCard.innerHTML = `
+          <div class="card animate-fade-up">
+            <div class="card-header" style="margin-bottom:12px;">
+              <span class="card-title">📹 AI Video &amp; Proctor Behavioral Report</span>
+              <span class="badge ${va.warnings === 0 ? 'badge-green' : 'badge-red'}">${va.warnings === 0 ? '✅ Verified Clean' : '⚠️ ' + va.warnings + ' Warning(s)'}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 16px 0;">
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">CONFIDENCE SCORE</div>
+                <div style="font-size: 22px; font-weight: 800; color: #16a34a; margin-top: 4px;">${va.confidence}%</div>
+              </div>
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">EYE CONTACT</div>
+                <div style="font-size: 22px; font-weight: 800; color: #2563eb; margin-top: 4px;">${va.eyeContact}%</div>
+              </div>
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">DOMINANT EXPRESSION</div>
+                <div style="font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 4px;">${va.dominantExpression || 'Focused'}</div>
+              </div>
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">INTEGRITY RATING</div>
+                <div style="font-size: 22px; font-weight: 800; color: ${va.integrityScore >= 90 ? '#16a34a' : '#ef4444'}; margin-top: 4px;">${va.integrityScore}%</div>
+              </div>
+            </div>
+            ${va.events && va.events.length > 0 ? `
+              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #991b1b;">
+                <strong>Proctor Alerts:</strong><br>
+                ${va.events.map(e => `• [${e.time}] ${e.reason}`).join('<br>')}
+              </div>
+            ` : `
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #166534;">
+                ✓ No unfair movements or suspicious gaze deviations were detected during this interview.
+              </div>
+            `}
+          </div>
+        `;
+      }
+    }
 
     // Q&A cards
     const qaList = document.getElementById('qa-list');

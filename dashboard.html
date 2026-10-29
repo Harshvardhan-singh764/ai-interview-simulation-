@@ -187,6 +187,17 @@
       <a href="setup.html" class="nav-link" data-page="setup">
         <span class="nav-icon">🚀</span> New Interview
       </a>
+      <a href="resume.html" class="nav-link" data-page="resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <span class="nav-section-label">Practice Areas</span>
+      <a href="setup.html?role=Aptitude" class="nav-link" data-page="aptitude">
+        <span class="nav-icon">🧠</span> Aptitude
+      </a>
+      <a href="setup.html?role=Soft+Skills" class="nav-link" data-page="soft-skills">
+        <span class="nav-icon">🗣️</span> Soft Skills
+      </a>
+      <a href="setup.html?role=Reasoning" class="nav-link" data-page="reasoning">
+        <span class="nav-icon">🧩</span> Reasoning
+      </a>
       <span class="nav-section-label">Activity</span>
       <a href="history.html" class="nav-link" data-page="history">
         <span class="nav-icon">📋</span> History
@@ -194,6 +205,18 @@
       <a href="profile.html" class="nav-link" data-page="profile">
         <span class="nav-icon">👤</span> Profile
       </a>
+      <span class="nav-section-label">To-Do List</span>
+      <div class="sidebar-todo" style="padding: 0 20px 10px; display: flex; flex-direction: column; gap: 10px;">
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-1" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Daily Mock Interview
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-2" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Review Past Mistakes
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; line-height: 1.4;">
+          <input type="checkbox" class="todo-cb" data-id="todo-3" style="margin-top: 2px; accent-color: var(--primary); cursor: pointer;"> Read Tech Blog
+        </label>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-card">
@@ -323,6 +346,7 @@
   </main>
 </div>
 
+<script src="js/questions.js"></script>
 <script src="js/utils.js"></script>
 <script>
   const user = requireAuth();
