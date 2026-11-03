@@ -5,6 +5,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const db = require('./db.js');
+let MCQ_BANK = {};
+try {
+  MCQ_BANK = require('./js/questions.js');
+} catch (e) {
+  console.warn('Could not load MCQ_BANK in server:', e.message);
+}
 
 // --- Load .env ---
 try {
@@ -308,12 +314,14 @@ async function handleRequest(req, res) {
 
   // --- Generate Interview Questions Endpoint ---
   if (urlPath === '/api/generate-questions' && req.method === 'POST') {
+    let body = {};
     try {
-      const { role, difficulty, count } = await parseBody(req);
+      body = await parseBody(req);
+      const { role, difficulty, count } = body;
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error('GEMINI_API_KEY not set in .env');
 
-      const prompt = `Generate ${count} unique multiple-choice questions for the topic/role: "${role}" at ${difficulty} level.
+      const prompt = `Generate ${count || 5} unique multiple-choice questions for the topic/role: "${role || 'Software Engineer'}" at ${difficulty || 'Intermediate'} level.
       If the topic is "Aptitude", generate quantitative aptitude or math questions.
       If the topic is "Reasoning", generate logical reasoning questions.
       If the topic is "Soft Skills", generate behavioral or situational questions.
@@ -337,8 +345,8 @@ async function handleRequest(req, res) {
 
       const data = await response.json();
       if (!data.candidates || !data.candidates[0]) {
-        console.error('Gemini API Error:', JSON.stringify(data, null, 2));
-        throw new Error('Invalid response from AI model');
+        console.warn('Gemini API notice:', data?.error?.message || 'No candidates returned');
+        throw new Error(data?.error?.message || 'Invalid response from AI model');
       }
       let aiText = data.candidates[0].content.parts[0].text;
       
@@ -347,8 +355,24 @@ async function handleRequest(req, res) {
 
       sendJson(res, 200, questions);
     } catch (e) {
-      console.error('Questions generation error:', e);
-      sendJson(res, 500, { error: e.message });
+      console.warn('AI question generation unavailable, serving from curated question bank:', e.message);
+      const roleKey = body.role || 'Software Engineer';
+      const diffKey = body.difficulty || 'Intermediate';
+      const numQuestions = parseInt(body.count, 10) || 5;
+
+      const bank = (MCQ_BANK[roleKey] && MCQ_BANK[roleKey][diffKey]) ||
+                   (MCQ_BANK[roleKey] && (MCQ_BANK[roleKey]['Intermediate'] || MCQ_BANK[roleKey]['Beginner'])) ||
+                   (MCQ_BANK['Software Engineer'] && MCQ_BANK['Software Engineer']['Intermediate']) ||
+                   (MCQ_BANK['Software Engineer'] && MCQ_BANK['Software Engineer']['Beginner']) || [];
+
+      const shuffled = [...bank].sort(() => Math.random() - 0.5);
+      const questions = shuffled.slice(0, Math.min(numQuestions, shuffled.length));
+
+      if (questions.length > 0) {
+        sendJson(res, 200, questions);
+      } else {
+        sendJson(res, 500, { error: e.message });
+      }
     }
     return;
   }
@@ -758,6 +782,10 @@ function generateFallbackResume(role = 'Software Engineer', level = 'Mid-Level',
     ]
   };
 }
+
+server.on('error', (err) => {
+  console.error('[Server] Socket error:', err.message);
+});
 
 if (require.main === module && !process.env.VERCEL) {
   server.listen(PORT, () => {

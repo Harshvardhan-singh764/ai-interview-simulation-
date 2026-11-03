@@ -721,23 +721,28 @@ function clearInterviewSession() {
 }
 
 async function generateQuestions(role, difficulty, count) {
+  const targetCount = parseInt(count, 10) || 5;
   try {
     const res = await fetch('/api/generate-questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role, difficulty, count })
+      body: JSON.stringify({ role, difficulty, count: targetCount })
     });
-    if (!res.ok) throw new Error('Failed to fetch questions');
-    return await res.json();
+    if (!res.ok) throw new Error('API status ' + res.status);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) return data;
+    throw new Error('API returned invalid or empty question array');
   } catch (e) {
-    console.error('AI question generation failed, using fallback bank.', e);
-    // Fallback to static bank if AI fails
+    console.warn('AI question generation unavailable, using fallback question bank:', e.message);
     if (typeof MCQ_BANK === 'undefined') return [];
-    const bank = (MCQ_BANK[role] && MCQ_BANK[role][difficulty]) ||
-                 (MCQ_BANK[role] && MCQ_BANK[role]['Beginner']) ||
-                 MCQ_BANK['Software Engineer']['Beginner'];
+    const roleKey = role || 'Software Engineer';
+    const diffKey = difficulty || 'Intermediate';
+    const bank = (MCQ_BANK[roleKey] && MCQ_BANK[roleKey][diffKey]) ||
+                 (MCQ_BANK[roleKey] && (MCQ_BANK[roleKey]['Intermediate'] || MCQ_BANK[roleKey]['Beginner'])) ||
+                 (MCQ_BANK['Software Engineer'] && MCQ_BANK['Software Engineer']['Intermediate']) ||
+                 (MCQ_BANK['Software Engineer'] && MCQ_BANK['Software Engineer']['Beginner']) || [];
     const shuffled = [...bank].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, Math.min(count, shuffled.length));
+    return shuffled.slice(0, Math.min(targetCount, shuffled.length));
   }
 }
 
